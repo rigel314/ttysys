@@ -10,7 +10,7 @@ It updates once every second.
 
 ##Build:
 	> make all
-A simple `make all` should suffice.  If you get errors using my make file, see the Questions/Bugs section below.
+A simple `make all` should suffice.  If you get errors using my makefile, see the Questions/Bugs section below.
 
 ##Installation:
 	> make install
