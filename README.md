@@ -5,6 +5,8 @@ ttyload
 ttyload is a live ncurses cpu usage graph.
 The graph's units are in percentage.
 It updates once every second.
+###Screenshot:
+<a href="https://raw.github.com/rigel314/ttyload/master/images/ttyloadCrop.png">![ttyload example](https://raw.github.com/rigel314/ttyload/master/images/ttyloadCropSmall.png)</a>
 
 ##Build:
 	> make all
