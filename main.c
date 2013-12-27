@@ -11,10 +11,12 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
+#include <math.h>
+#include <sys/select.h>
 
 struct cpuTime
 {
-	long total;
+	unsigned long long total;
 	long user;
 	long sys;
 };
@@ -25,6 +27,8 @@ struct cpuPercent
 	float sys;
 };
 
+void listShiftLeftAdd(float* list, int len, float new);
+void drawScreen(char* buf, float* list, int width, int height);
 int getNumCPUs();
 int strchrCount(char* s, char c);
 struct cpuTime parseLine(char* str, int len);
@@ -38,21 +42,16 @@ int main(int argc, char** argv)
 	struct cpuTime* now;
 	struct cpuPercent* cpu;
 	int numCPUs = getNumCPUs();
+	char* screen;
+	float* list;
+	int listLen;
+	int rows;
+	int columns;
 	
 	// creating structs
 	then = malloc(sizeof(struct cpuTime) * (numCPUs+1));
 	now = malloc(sizeof(struct cpuTime) * (numCPUs+1));
 	cpu = malloc(sizeof(struct cpuPercent) * (numCPUs+1));
-	
-//	while(1)
-//	{
-//		getCPUtime(cpu, numCPUs, then, now);
-//		for(int i = 0; i <= numCPUs; i++)
-//			printf("%.2f%%\t%.2f%%\t%.2f%%\n", cpu[i].total, cpu[i].user, cpu[i].sys);
-//		printf("\n");
-//	}
-//	readCPUs(numCPUs, now);
-//	return 0;
 	
 	// ncurses init stuff
 	initscr();
@@ -63,17 +62,52 @@ int main(int argc, char** argv)
 	halfdelay(3);
 	refresh();
 	
+	rows = LINES;
+	columns = COLS;
+	listLen = COLS;
+	screen = calloc(COLS*LINES, sizeof(char));
+	list = calloc(COLS, sizeof(float));
+	
 	while((c = getch()) != 10)
 	{
 		getCPUtime(cpu, numCPUs, then, now);
 		clear();
-		for(int i = 0; i < numCPUs + 1; i++)
-			mvprintw(i, 0, "%.2f%%\t%.2f%%\t%.2f%%\n", cpu[i].total, cpu[i].user, cpu[i].sys);
+//		for(int i = 0; i < numCPUs + 1; i++)
+//			mvprintw(i, 0, "%.2f%%\t%.2f%%\t%.2f%%\n", cpu[i].total, cpu[i].user, cpu[i].sys);
+		listShiftLeftAdd(list, listLen, cpu[0].total);
+		drawScreen(screen, list, columns, rows);
 		refresh();
 	}
 	
 	endwin();
 	return 0;
+}
+
+void listShiftLeftAdd(float* list, int len, float new)
+{
+	for(int i = 0; i < len-1; i++)
+	{
+		list[i] = list[i+1];
+	}
+	list[len-1] = new;
+}
+
+void drawScreen(char* buf, float* list, int width, int height)
+{
+	int indexes[width];
+	int axes[5];
+	
+	for(int i = 1; i < 4; i++)
+		axes[i] = roundf((float) height - (float) height * (25.0*i)/100.0) - 1;
+	
+	for(int i = 0; i < width; i++)
+	{
+		indexes[i] = roundf((float) height - (float) height * list[i]/100.0) - 1;
+		
+		for(int j = indexes[i]; j < height; j++)
+			mvprintw(j, i, "*");
+	}
+	
 }
 
 int getNumCPUs()
@@ -123,8 +157,10 @@ struct cpuTime parseLine(char* str, int len)
 	char** args;
 	int j = 1;
 	struct cpuTime out;
+	unsigned long long sum = 0;
+	int argc = strchrCount(str, ' ') + 1;
 	
-	args = malloc((strchrCount(str, ' ') + 1) * sizeof(char*));
+	args = malloc(sizeof(char*) * argc);
 	
 	args[0] = NULL;
 	
@@ -144,9 +180,11 @@ struct cpuTime parseLine(char* str, int len)
 		}
 	}
 	
-	out.user = atoi(args[1]) + atoi(args[2]);
-	out.sys = atoi(args[3]);
-	out.total = out.user + out.sys;
+	out.user = atol(args[1]) + atol(args[2]);
+	out.sys = atol(args[3]);
+	for(int i = 1; i < j; i++)
+		sum += atol(args[i]);
+	out.total = sum;
 	
 	free(args);
 	
@@ -183,14 +221,17 @@ int readCPUs(int numCPUs, struct cpuTime* now)
 
 int getCPUtime(struct cpuPercent* cpu, int numCPUs, struct cpuTime* first, struct cpuTime* second)
 {
-	struct timespec wait = {.tv_sec = 1, .tv_nsec = 1000000 * 0};
-	struct timespec rest;
-	long userHz = sysconf(_SC_CLK_TCK);
+	struct timeval wait = {.tv_sec = 1, .tv_usec = 0};
+	fd_set set;
+	long numEvents;
 	
 	readCPUs(numCPUs, first);
 
-	// Wait 1 second.
-	nanosleep(&wait, &rest);
+	// Zero out the set, then add 0 to the set to monitor stdin for keypresses.
+	FD_ZERO(&set);
+	FD_SET(0, &set);
+	// Wait 1 second. Or gather input.
+	select(1, &set, NULL, NULL, &wait);
 	
 	readCPUs(numCPUs, second);
 
@@ -202,9 +243,14 @@ int getCPUtime(struct cpuPercent* cpu, int numCPUs, struct cpuTime* first, struc
 		if(i == 0)
 			divby = numCPUs;
 		
-		cpu[i].total = (float) (second[i].total - first[i].total) / (float) userHz * 100.0 / divby;
-		cpu[i].user = (float) (second[i].user - first[i].user) / (float) userHz * 100.0 / divby;
-		cpu[i].sys = (float) (second[i].sys - first[i].sys) / (float) userHz * 100.0 / divby;
+		numEvents = second[i].total - first[i].total;
+		if(numEvents == 0)
+			return 0;
+		
+//		cpu[i].total = (float) (second[i].total - first[i].total) / (float) userHz * 100.0 / divby;
+		cpu[i].user = (float) (second[i].user - first[i].user) / (float) numEvents * 100.0 / divby;
+		cpu[i].sys = (float) (second[i].sys - first[i].sys) / (float) numEvents * 100.0 / divby;
+		cpu[i].total = cpu[i].user + cpu[i].sys;
 	}
 
 	return 0;
