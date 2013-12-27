@@ -62,7 +62,6 @@ int main(int argc, char** argv)
 	curs_set(0);
 	keypad(stdscr,TRUE);
 	halfdelay(3);
-	refresh();
 	
 	rows = LINES;
 	columns = COLS;
@@ -70,15 +69,15 @@ int main(int argc, char** argv)
 	screen = calloc(COLS*LINES, sizeof(char));
 	list = calloc(COLS, sizeof(float));
 	
-	while((c = getch()) != 10)
+	while((c = getch()) != 10 && c != 'q' && c != 'Q')
 	{
-		getCPUtime(cpu, numCPUs, then, now);
 		clear();
 //		for(int i = 0; i < numCPUs + 1; i++)
 //			mvprintw(i, 0, "%.2f%%\t%.2f%%\t%.2f%%\n", cpu[i].total, cpu[i].user, cpu[i].sys);
-		listShiftLeftAdd(list, listLen, cpu[0].total);
 		drawScreen(screen, list, columns, rows);
 		refresh();
+		getCPUtime(cpu, numCPUs, then, now);
+		listShiftLeftAdd(list, listLen, cpu[0].total);
 	}
 	
 	endwin();
