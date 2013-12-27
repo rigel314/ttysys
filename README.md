@@ -13,7 +13,7 @@ A simple `make all` should suffice.  If you get errors using my make file, see t
 ##Installation:
 	> make install
 Running `make install` will copy the binary to `/usr/local/bin`.  This should be in your path.
-###Unistalation:
+###Uninstalation:
 	> make uninstall
 Running `make uninstall` will `rm /usr/local/bin/ttyload`.
 
