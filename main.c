@@ -55,6 +55,8 @@ int main(int argc, char** argv)
 	
 	// ncurses init stuff
 	initscr();
+	start_color();
+	init_pair(1, COLOR_RED, COLOR_BLACK);
 	raw();
 	noecho();
 	curs_set(0);
@@ -97,7 +99,7 @@ void drawScreen(char* buf, float* list, int width, int height)
 	int indexes[width];
 	int axes[5];
 	
-	for(int i = 1; i < 4; i++)
+	for(int i = 0; i < 5; i++)
 		axes[i] = roundf((float) height - (float) height * (25.0*i)/100.0) - 1;
 	
 	for(int i = 0; i < width; i++)
@@ -105,9 +107,24 @@ void drawScreen(char* buf, float* list, int width, int height)
 		indexes[i] = roundf((float) height - (float) height * list[i]/100.0) - 1;
 		
 		for(int j = indexes[i]; j < height; j++)
+		{
 			mvprintw(j, i, "*");
+		}
+		
+		for(int j = 1; j < 4; j++)
+		{
+			attron(COLOR_PAIR(1));
+			if(axes[j] != indexes[i])
+				mvhline(axes[j], i, ACS_HLINE, 1);
+			else
+				mvprintw(indexes[i], i, "*");
+			attroff(COLOR_PAIR(1));
+		}
 	}
 	
+	for(int i = 0; i < width; i++)
+	{
+	}
 }
 
 int getNumCPUs()
