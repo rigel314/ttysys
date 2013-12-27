@@ -20,7 +20,7 @@ $(shell mkdir -p $(TARGET_DIR) 2> /dev/null)
 $(shell mkdir -p $(OBJECT_DIR) 2> /dev/null)
 
 # Some targets don't create files
-.PHONY : all clean
+.PHONY : all clean install uninstall
 
 # Build all
 all : $(TARGET_DIR)/ttyload
@@ -38,6 +38,8 @@ clean :
 
 # Install the executables
 install : all
+	cp $(TARGET_DIR)/ttyload /usr/local/bin/
 
 # Uninstall the executables
 uninstall :
+	-rm /usr/local/bin/ttyload 2> /dev/null
