@@ -221,7 +221,6 @@ int readCPUs(int numCPUs, struct cpuTime* now)
 	
 	for(i = 0; i <  numCPUs + 1; i++)
 	{
-//		printf("%d\n", i);
 		if((len = getline(&line, &dum, fp)) != -1)
 		{
 			now[i] = parseLine(line, len);
@@ -254,18 +253,12 @@ int getCPUtime(struct cpuPercent* cpu, int numCPUs, struct cpuTime* first, struc
 	// do math to calculate percentage
 	for(int i = 0; i < numCPUs + 1; i++)
 	{
-		float divby = 1;
-		
-		if(i == 0)
-			divby = numCPUs;
-		
 		numEvents = second[i].total - first[i].total;
 		if(numEvents == 0)
 			return 0;
 		
-//		cpu[i].total = (float) (second[i].total - first[i].total) / (float) userHz * 100.0 / divby;
-		cpu[i].user = (float) (second[i].user - first[i].user) / (float) numEvents * 100.0 / divby;
-		cpu[i].sys = (float) (second[i].sys - first[i].sys) / (float) numEvents * 100.0 / divby;
+		cpu[i].user = (float) (second[i].user - first[i].user) / (float) numEvents * 100.0;
+		cpu[i].sys = (float) (second[i].sys - first[i].sys) / (float) numEvents * 100.0;
 		cpu[i].total = cpu[i].user + cpu[i].sys;
 	}
 
