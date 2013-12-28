@@ -28,7 +28,8 @@ struct cpuPercent
 };
 
 void listShiftLeftAdd(float* list, int len, float new);
-void drawScreen(char* buf, float* list, int width, int height);
+void listShiftRightAdd(float* list, int len, float new);
+void drawScreen(float* list, int width, int height);
 int getNumCPUs();
 int strchrCount(char* s, char c);
 struct cpuTime parseLine(char* str, int len);
@@ -42,11 +43,11 @@ int main(int argc, char** argv)
 	struct cpuTime* now;
 	struct cpuPercent* cpu;
 	int numCPUs = getNumCPUs();
-	char* screen;
-	float* list;
+	float* list = NULL;
 	int listLen;
 	int rows;
-	int columns;
+	int columns = 0;
+	bool startFlag = true;
 	
 	// creating structs
 	then = malloc(sizeof(struct cpuTime) * (numCPUs+1));
@@ -63,18 +64,40 @@ int main(int argc, char** argv)
 	keypad(stdscr,TRUE);
 	halfdelay(3);
 	
-	rows = LINES;
-	columns = COLS;
-	listLen = COLS;
-	screen = calloc(COLS*LINES, sizeof(char));
-	list = calloc(COLS, sizeof(float));
-	
 	while((c = getch()) != 10 && c != 'q' && c != 'Q')
 	{
+		if(startFlag)
+			c = KEY_RESIZE;
+		if(c == KEY_RESIZE)
+		{
+			int diff = COLS - columns;
+			
+			if(startFlag)
+			{
+				startFlag = false;
+				diff = 0;
+				list = calloc(COLS, sizeof(float));
+			}
+			
+			if(diff < 0)
+				for(int i = 0; i < abs(diff); i++)
+					listShiftLeftAdd(list, listLen, 0);
+			
+			rows = LINES;
+			columns = COLS;
+			listLen = COLS;
+			
+			list = realloc(list, sizeof(float) * listLen);
+			
+			if(diff > 0)
+				for(int i = 0; i < diff; i++)
+					listShiftRightAdd(list, listLen, 0);
+		}
+
 		clear();
 //		for(int i = 0; i < numCPUs + 1; i++)
 //			mvprintw(i, 0, "%.2f%%\t%.2f%%\t%.2f%%\n", cpu[i].total, cpu[i].user, cpu[i].sys);
-		drawScreen(screen, list, columns, rows);
+		drawScreen(list, columns, rows);
 		refresh();
 		getCPUtime(cpu, numCPUs, then, now);
 		listShiftLeftAdd(list, listLen, cpu[0].total);
@@ -93,7 +116,16 @@ void listShiftLeftAdd(float* list, int len, float new)
 	list[len-1] = new;
 }
 
-void drawScreen(char* buf, float* list, int width, int height)
+void listShiftRightAdd(float* list, int len, float new)
+{
+	for(int i = len - 1; i > 0; i--)
+	{
+		list[i] = list[i-1];
+	}
+	list[0] = new;
+}
+
+void drawScreen(float* list, int width, int height)
 {
 	int indexes[width];
 	int axes[5];
