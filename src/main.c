@@ -114,15 +114,11 @@ void drawScreen(char* buf, float* list, int width, int height)
 		{
 			attron(COLOR_PAIR(1));
 			if(axes[j] != indexes[i])
-				mvhline(axes[j], i, ACS_HLINE, 1);
+				mvaddch(axes[j], i, ACS_HLINE);
 			else
 				mvprintw(indexes[i], i, "*");
 			attroff(COLOR_PAIR(1));
 		}
-	}
-	
-	for(int i = 0; i < width; i++)
-	{
 	}
 }
 
