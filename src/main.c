@@ -20,11 +20,53 @@ struct cpuTime
 	long user;
 	long sys;
 };
+
 struct cpuPercent
 {
 	float total;
 	float user;
 	float sys;
+};
+
+enum winFlags { TitleOff = 1, LabelOff = 1<<1, GridOff = 1<<2, ExpandedTitleOff = 1<<3, BorderOff = 1<<4 };
+enum winType { PercentChart };
+
+struct GPoint
+{
+	int x;
+	int y;
+};
+struct GSize
+{
+	int width;
+	int height;
+};
+struct GRect
+{
+	struct GPoint origin;
+	struct GSize size;
+};
+#define GRect(x, y, w, h) ((struct GRect){{(x), (y)}, {(w), (h)}})
+
+struct arrowPointers
+{
+	WINDOW* left;
+	WINDOW* right;
+	WINDOW* up;
+	WINDOW* down;
+};
+
+struct windowlist
+{
+	struct windowlist* next;
+	WINDOW* titlewin;
+	WINDOW* contentwin;
+	WINDOW* labelwin;
+	char* title;
+	int flags;
+	enum winType type;
+	struct GRect frame;
+	struct arrowPointers surrounding;
 };
 
 void listShiftLeftAdd(float* list, int len, float new);
@@ -35,6 +77,12 @@ int strchrCount(char* s, char c);
 struct cpuTime parseLine(char* str, int len);
 int readCPUs(int numCPUs, struct cpuTime* now);
 int getCPUtime(struct cpuPercent* cpu, int numCPUs, struct cpuTime* first, struct cpuTime* second);
+
+void splitH(struct windowlist* old);
+//void writeAllRefresh(struct windowlist* list);
+void refreshAll(struct windowlist* wins);
+struct windowlist* addWin(struct windowlist** wins);
+void freeWin(struct windowlist** wins, struct windowlist* win);
 
 int main(int argc, char** argv)
 {
@@ -48,6 +96,8 @@ int main(int argc, char** argv)
 	int rows;
 	int columns = 0;
 	bool startFlag = true;
+	struct windowlist* wins = NULL;
+	struct windowlist* focus;
 	
 	// creating structs
 	then = malloc(sizeof(struct cpuTime) * (numCPUs+1));
@@ -63,6 +113,28 @@ int main(int argc, char** argv)
 	curs_set(0);
 	keypad(stdscr,TRUE);
 	halfdelay(3);
+	refresh();
+	
+	focus = addWin(&wins);
+	
+	while((c = getch()))
+	{
+		refresh();
+		refreshAll(wins);
+		
+		if(c == 10)
+			break;
+		
+		switch (c)
+		{
+			case 'h':
+				splitH(focus);
+				break;
+		}
+	}
+	
+	endwin();
+	return 0;
 	
 	while((c = getch()) != 10 && c != 'q' && c != 'Q')
 	{
@@ -105,6 +177,108 @@ int main(int argc, char** argv)
 	
 	endwin();
 	return 0;
+}
+
+void splitH(struct windowlist* old)
+{
+	struct windowlist* new;
+	struct GRect oldFrame;
+	
+	new = addWin(&old);
+	if(!new)
+		return;
+	
+	oldFrame.size.width = getmaxx(old->titlewin);
+	oldFrame.size.height = getmaxy(old->titlewin);
+	
+	wresize(old->titlewin, oldFrame.size.height, oldFrame.size.width/2);
+	wmove(new->titlewin, oldFrame.origin.y, oldFrame.origin.x + oldFrame.size.width/2);
+	wresize(old->titlewin, oldFrame.size.height, oldFrame.size.width/2);
+	box(old->titlewin, 0, 0);
+	box(new->titlewin, 0, 0);
+}
+
+//void writeAllRefresh(struct windowlist* list)
+//{
+//	resizeAll(list);
+//	writeContents(list);
+//	writeTitles(list);
+//	refreshAll(list);
+//	return;
+//}
+
+void refreshAll(struct windowlist* wins)
+{
+	struct windowlist* ptr;
+	
+	for(ptr = wins; ptr != NULL; ptr = ptr->next)
+	{
+		touchwin(ptr->titlewin);
+		wrefresh(ptr->titlewin);
+	}
+}
+
+struct windowlist* addWin(struct windowlist** wins)
+{
+	struct windowlist* ptr;
+	struct windowlist* new;
+	
+	if(!wins)
+		return NULL;
+	
+	new = malloc(sizeof(struct windowlist));
+	if(!new)
+		return NULL;
+	
+	new->next = NULL;
+	new->titlewin = newwin(0, 0, 0, 0);
+	new->contentwin = newwin(0, 0, 0, 0);
+	new->labelwin = newwin(0, 0, 0, 0);
+	new->title = NULL;
+	new->flags = 0;
+	new->type = PercentChart;
+	new->surrounding.left = NULL;
+	new->surrounding.right = NULL;
+	new->surrounding.up = NULL;
+	new->surrounding.down = NULL;
+	
+	box(new->titlewin, 0, 0);
+	
+	if(!*wins)
+	{
+		*wins = new;
+	}
+	else
+	{
+		for(ptr = *wins; ptr->next != NULL; ptr = ptr->next);
+		
+		ptr->next = new;
+	}
+	
+	return new;
+}
+
+void freeWin(struct windowlist** wins, struct windowlist* win)
+{
+	struct windowlist* ptr;
+	
+	if(!wins || !*wins)
+		return;
+	
+	for(ptr = *wins; ptr->next != win && ptr->next != NULL; ptr = ptr->next);
+	
+	if(!ptr->next)
+		return;
+	
+	ptr->next = win->next;
+	
+	werase(win->contentwin);
+	werase(win->labelwin);
+	werase(win->titlewin);
+	delwin(win->contentwin);
+	delwin(win->labelwin);
+	delwin(win->titlewin);
+	free(win->title);
 }
 
 void listShiftLeftAdd(float* list, int len, float new)
