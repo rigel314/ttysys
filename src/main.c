@@ -67,6 +67,7 @@ struct windowlist
 		struct windowlist* up;
 		struct windowlist* down;
 	} surrounding;
+	float* data;
 };
 
 void listShiftLeftAdd(float* list, int len, float new);
@@ -78,7 +79,7 @@ struct cpuTime parseLine(char* str, int len);
 int readCPUs(int numCPUs, struct cpuTime* now);
 int getCPUtime(struct cpuPercent* cpu, int numCPUs, struct cpuTime* first, struct cpuTime* second);
 
-void remapArrows(struct windowlist* wins);
+void remapArrows(struct windowlist* wins, struct windowlist* win);
 void resizeWindowToFrame(struct windowlist* win);
 void splitV(struct windowlist* old);
 void splitH(struct windowlist* old);
@@ -137,11 +138,11 @@ int main(int argc, char** argv)
 		{
 			case 'h':
 				splitH(focus);
-				remapArrows(wins);
+				remapArrows(wins, wins);
 				break;
 			case 'v':
 				splitV(focus);
-				remapArrows(wins);
+				remapArrows(wins, wins);
 				break;
 			case '\t':
 				focus = focus->next;
@@ -213,9 +214,28 @@ int main(int argc, char** argv)
 	return 0;
 }
 
-void remapArrows(struct windowlist* wins)
+void remapArrows(struct windowlist* wins, struct windowlist* win)
 {
-	;
+	struct windowlist* ptr;
+	
+	if(!win)
+		return;
+	
+//	win->surrounding = (struct arrowPointers){NULL, NULL, NULL, NULL};
+	
+	for(ptr = wins; ptr != NULL; ptr = ptr->next)
+	{
+		if(ptr->frame.origin.y == win->frame.origin.y && ptr->frame.origin.x == win->frame.origin.x + win->frame.size.width + 1)
+			win->surrounding.right = ptr;
+		if(ptr->frame.origin.y == win->frame.origin.y && ptr->frame.origin.x + ptr->frame.size.width +1 == win->frame.origin.x)
+			win->surrounding.left = ptr;
+		if(ptr->frame.origin.x == win->frame.origin.x && ptr->frame.origin.y == win->frame.origin.y + win->frame.size.height + 1)
+			win->surrounding.down = ptr;
+		if(ptr->frame.origin.x == win->frame.origin.x && ptr->frame.origin.y + ptr->frame.size.height +1 == win->frame.origin.y)
+			win->surrounding.up = ptr;
+	}
+	
+	remapArrows(wins, win->next);
 }
 
 void resizeWindowToFrame(struct windowlist* win)
