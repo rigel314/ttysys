@@ -62,7 +62,8 @@ int main(int argc, char** argv)
 	noecho();
 	curs_set(0);
 	keypad(stdscr,TRUE);
-	halfdelay(3);
+	halfdelay(1);
+	refresh();
 	
 	while((c = getch()) != 10 && c != 'q' && c != 'Q')
 	{
