@@ -14,6 +14,8 @@
 #include <math.h>
 #include <sys/select.h>
 
+enum lineDir { HORIZ, VERT };
+
 struct cpuTime
 {
 	unsigned long long total;
@@ -48,14 +50,6 @@ struct GRect
 };
 #define GRect(x, y, w, h) ((struct GRect){{(x), (y)}, {(w), (h)}})
 
-struct arrowPointers
-{
-	WINDOW* left;
-	WINDOW* right;
-	WINDOW* up;
-	WINDOW* down;
-};
-
 struct windowlist
 {
 	struct windowlist* next;
@@ -66,7 +60,13 @@ struct windowlist
 	int flags;
 	enum winType type;
 	struct GRect frame;
-	struct arrowPointers surrounding;
+	struct arrowPointers
+	{
+		struct windowlist* left;
+		struct windowlist* right;
+		struct windowlist* up;
+		struct windowlist* down;
+	} surrounding;
 };
 
 void listShiftLeftAdd(float* list, int len, float new);
@@ -78,9 +78,13 @@ struct cpuTime parseLine(char* str, int len);
 int readCPUs(int numCPUs, struct cpuTime* now);
 int getCPUtime(struct cpuPercent* cpu, int numCPUs, struct cpuTime* first, struct cpuTime* second);
 
+void remapArrows(struct windowlist* wins);
+void resizeWindowToFrame(struct windowlist* win);
+void splitV(struct windowlist* old);
 void splitH(struct windowlist* old);
 //void writeAllRefresh(struct windowlist* list);
-void refreshAll(struct windowlist* wins);
+void refreshAll(struct windowlist* wins, struct windowlist* focus);
+void printLine(int row, int col, enum lineDir direction, int len);
 struct windowlist* addWin(struct windowlist** wins);
 void freeWin(struct windowlist** wins, struct windowlist* win);
 
@@ -108,19 +112,23 @@ int main(int argc, char** argv)
 	initscr();
 	start_color();
 	init_pair(1, COLOR_RED, COLOR_BLACK);
+	init_pair(2, COLOR_YELLOW, COLOR_BLACK);
 	raw();
 	noecho();
 	curs_set(0);
 	keypad(stdscr,TRUE);
-	halfdelay(3);
+	halfdelay(1);
 	refresh();
 	
 	focus = addWin(&wins);
+	resizeWindowToFrame(focus);
+	
+	box(stdscr, 0, 0);
 	
 	while((c = getch()))
 	{
 		refresh();
-		refreshAll(wins);
+		refreshAll(wins, focus);
 		
 		if(c == 10)
 			break;
@@ -129,6 +137,32 @@ int main(int argc, char** argv)
 		{
 			case 'h':
 				splitH(focus);
+				remapArrows(wins);
+				break;
+			case 'v':
+				splitV(focus);
+				remapArrows(wins);
+				break;
+			case '\t':
+				focus = focus->next;
+				if(focus == NULL)
+					focus = wins;
+				break;
+			case KEY_RIGHT:
+				if(focus->surrounding.right != NULL)
+					focus = focus->surrounding.right;
+				break;
+			case KEY_LEFT:
+				if(focus->surrounding.left != NULL)
+					focus = focus->surrounding.left;
+				break;
+			case KEY_UP:
+				if(focus->surrounding.up != NULL)
+					focus = focus->surrounding.up;
+				break;
+			case KEY_DOWN:
+				if(focus->surrounding.down != NULL)
+					focus = focus->surrounding.down;
 				break;
 		}
 	}
@@ -179,23 +213,101 @@ int main(int argc, char** argv)
 	return 0;
 }
 
-void splitH(struct windowlist* old)
+void remapArrows(struct windowlist* wins)
+{
+	;
+}
+
+void resizeWindowToFrame(struct windowlist* win)
+{
+	wresize(win->titlewin, 1, win->frame.size.width);
+	wresize(win->labelwin, win->frame.size.height-1, 3);
+	wresize(win->contentwin, win->frame.size.height-1, win->frame.size.width-3);
+	mvwin(win->titlewin, win->frame.origin.y, win->frame.origin.x);
+	mvwin(win->labelwin, win->frame.origin.y+1, win->frame.origin.x);
+	mvwin(win->contentwin, win->frame.origin.y+1, win->frame.origin.x+3);
+//	mvwprintw(win->titlewin, 0, 3, "----Test Title----");
+	win->title = "----Test Title----";
+	mvwprintw(win->labelwin, 3, 0, "20%%");
+	mvwprintw(win->contentwin, 3, 3, "%d, %d, %d, %d        ", win->frame.origin.x, win->frame.origin.y, win->frame.size.width, win->frame.size.height);
+}
+
+void splitV(struct windowlist* old)
 {
 	struct windowlist* new;
-	struct GRect oldFrame;
+	bool parity;
 	
 	new = addWin(&old);
 	if(!new)
 		return;
 	
-	oldFrame.size.width = getmaxx(old->titlewin);
-	oldFrame.size.height = getmaxy(old->titlewin);
+	new->frame = old->frame;
 	
-	wresize(old->titlewin, oldFrame.size.height, oldFrame.size.width/2);
-	wmove(new->titlewin, oldFrame.origin.y, oldFrame.origin.x + oldFrame.size.width/2);
-	wresize(old->titlewin, oldFrame.size.height, oldFrame.size.width/2);
-	box(old->titlewin, 0, 0);
-	box(new->titlewin, 0, 0);
+	parity = old->frame.size.height%2;
+	
+	if(parity) // Read: "if old height is odd"
+	{
+		old->frame.size.height = (old->frame.size.height - 1)/2;
+		new->frame.size.height = old->frame.size.height;
+	}
+	else
+	{
+		old->frame.size.height = (old->frame.size.height)/2;
+		new->frame.size.height = old->frame.size.height - 1;
+	}
+	
+	new->frame.origin.y = old->frame.origin.y + old->frame.size.height + 1;
+//	new->frame.origin.x = old->frame.origin.x;
+	
+//	new->surrounding = old->surrounding;
+//	old->surrounding.down = new;
+//	new->surrounding.up = old;
+//	if(new->surrounding.down && new->surrounding.down->frame.origin.x == new->frame.origin.x)
+//		new->surrounding.down->surrounding.up = new;
+	
+	resizeWindowToFrame(old);
+	resizeWindowToFrame(new);
+	
+	printLine(new->frame.origin.y - 1, new->frame.origin.x, HORIZ, new->frame.size.width);
+}
+
+void splitH(struct windowlist* old)
+{
+	struct windowlist* new;
+	bool parity;
+	
+	new = addWin(&old);
+	if(!new)
+		return;
+	
+	new->frame = old->frame;
+	
+	parity = old->frame.size.width%2;
+	
+	if(parity) // Read: "if old width is odd"
+	{
+		old->frame.size.width = (old->frame.size.width - 1)/2;
+		new->frame.size.width = old->frame.size.width;
+	}
+	else
+	{
+		old->frame.size.width = (old->frame.size.width)/2;
+		new->frame.size.width = old->frame.size.width - 1;
+	}
+	
+//	new->frame.origin.y = old->frame.origin.y;
+	new->frame.origin.x = old->frame.origin.x + old->frame.size.width + 1;
+	
+//	new->surrounding = old->surrounding;
+//	old->surrounding.right = new;
+//	new->surrounding.left = old;
+//	if(new->surrounding.right && new->surrounding.right->frame.origin.y == new->frame.origin.y)
+//		new->surrounding.right->surrounding.left = new;
+	
+	resizeWindowToFrame(old);
+	resizeWindowToFrame(new);
+	
+	printLine(new->frame.origin.y, new->frame.origin.x - 1, VERT, new->frame.size.height);
 }
 
 //void writeAllRefresh(struct windowlist* list)
@@ -207,14 +319,44 @@ void splitH(struct windowlist* old)
 //	return;
 //}
 
-void refreshAll(struct windowlist* wins)
+void refreshAll(struct windowlist* wins, struct windowlist* focus)
 {
 	struct windowlist* ptr;
 	
 	for(ptr = wins; ptr != NULL; ptr = ptr->next)
 	{
-		touchwin(ptr->titlewin);
+//		box(ptr->titlewin, 0, 0);
+//		box(ptr->labelwin, 0, 0);
+//		box(ptr->contentwin, 0, 0);
+		
+		if(ptr == focus)
+			wattron(ptr->titlewin, COLOR_PAIR(2));
+		
+		mvwprintw(ptr->titlewin, 0, 3, ptr->title);
+		
+		if(ptr == focus)
+			wattroff(ptr->titlewin, COLOR_PAIR(2));
+		
 		wrefresh(ptr->titlewin);
+		wrefresh(ptr->labelwin);
+		wrefresh(ptr->contentwin);
+	}
+}
+
+void printLine(int row, int col, enum lineDir direction, int len)
+{
+	int i;
+	switch (direction) {
+		case HORIZ:
+			for(i=0;i<len;i++)
+				mvhline(row,col+i,ACS_HLINE,1);
+			break;
+		case VERT:
+			for(i=0;i<len;i++)
+				mvvline(row+i,col,ACS_VLINE,1);
+			break;
+		default:
+			break;
 	}
 }
 
@@ -241,8 +383,7 @@ struct windowlist* addWin(struct windowlist** wins)
 	new->surrounding.right = NULL;
 	new->surrounding.up = NULL;
 	new->surrounding.down = NULL;
-	
-	box(new->titlewin, 0, 0);
+	new->frame = GRect(1, 1, COLS - 2, LINES - 2);
 	
 	if(!*wins)
 	{
@@ -280,6 +421,7 @@ void freeWin(struct windowlist** wins, struct windowlist* win)
 	delwin(win->titlewin);
 	free(win->title);
 }
+
 
 void listShiftLeftAdd(float* list, int len, float new)
 {
