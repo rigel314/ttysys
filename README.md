@@ -23,6 +23,10 @@ Running `make uninstall` will `rm /usr/local/bin/ttyload`.
 	> ttyload
 'q' will quit.
 
+##Contributions:
+I didn't start out doing it, but I will be sticking to the branching model described [here](http://nvie.com/posts/a-successful-git-branching-model/).  Pull requests should also stick to this branching model.  Thanks.
+
 #Questions/Bugs?
 [Report A Bug](https://github.com/rigel314/ttyload/issues)<br />
+OR<br />
 Contact me at <pi.rubiks@gmail.com>
