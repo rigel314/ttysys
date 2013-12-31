@@ -68,6 +68,7 @@ struct windowlist
 		struct windowlist* down;
 	} surrounding;
 	float* data;
+	int dataLen;
 };
 
 void listShiftLeftAdd(float* list, int len, float new);
@@ -221,7 +222,7 @@ void remapArrows(struct windowlist* wins, struct windowlist* win)
 	if(!win)
 		return;
 	
-//	win->surrounding = (struct arrowPointers){NULL, NULL, NULL, NULL};
+	win->surrounding = (struct arrowPointers){NULL, NULL, NULL, NULL};
 	
 	for(ptr = wins; ptr != NULL; ptr = ptr->next)
 	{
@@ -240,12 +241,36 @@ void remapArrows(struct windowlist* wins, struct windowlist* win)
 
 void resizeWindowToFrame(struct windowlist* win)
 {
+	int diff;
+	int newLen;
+	
 	wresize(win->titlewin, 1, win->frame.size.width);
 	wresize(win->labelwin, win->frame.size.height-1, 3);
 	wresize(win->contentwin, win->frame.size.height-1, win->frame.size.width-3);
 	mvwin(win->titlewin, win->frame.origin.y, win->frame.origin.x);
 	mvwin(win->labelwin, win->frame.origin.y+1, win->frame.origin.x);
 	mvwin(win->contentwin, win->frame.origin.y+1, win->frame.origin.x+3);
+	
+	newLen = win->frame.size.width-3;
+	diff = newLen - win->dataLen;
+	
+	if(win->dataLen == 0)
+	{
+		diff = 0;
+		win->data = calloc(newLen, sizeof(float));
+	}
+	
+	if(diff < 0)
+		for(int i = 0; i < abs(diff); i++)
+			listShiftLeftAdd(win->data, win->dataLen, 0);
+	
+	win->dataLen = newLen;
+	win->data = realloc(win->data, sizeof(float) * newLen);
+	
+	if(diff > 0)
+		for(int i = 0; i < diff; i++)
+			listShiftRightAdd(win->data, win->dataLen, 0);
+	
 //	mvwprintw(win->titlewin, 0, 3, "----Test Title----");
 	win->title = "----Test Title----";
 	mvwprintw(win->labelwin, 3, 0, "20%%");
@@ -404,6 +429,8 @@ struct windowlist* addWin(struct windowlist** wins)
 	new->surrounding.up = NULL;
 	new->surrounding.down = NULL;
 	new->frame = GRect(1, 1, COLS - 2, LINES - 2);
+	new->data = NULL;
+	new->dataLen = 0;
 	
 	if(!*wins)
 	{
