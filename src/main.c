@@ -73,7 +73,7 @@ struct windowlist
 
 void listShiftLeftAdd(float* list, int len, float new);
 void listShiftRightAdd(float* list, int len, float new);
-void drawScreen(float* list, int width, int height);
+void drawScreen(struct windowlist* win);
 int getNumCPUs();
 int strchrCount(char* s, char c);
 struct cpuTime parseLine(char* str, int len);
@@ -97,13 +97,14 @@ int main(int argc, char** argv)
 	struct cpuTime* now;
 	struct cpuPercent* cpu;
 	int numCPUs = getNumCPUs();
-	float* list = NULL;
-	int listLen;
-	int rows;
-	int columns = 0;
-	bool startFlag = true;
+//	float* list = NULL;
+//	int listLen;
+//	int rows;
+//	int columns = 0;
+//	bool startFlag = true;
 	struct windowlist* wins = NULL;
 	struct windowlist* focus;
+	struct windowlist* ptr;
 	
 	// creating structs
 	then = malloc(sizeof(struct cpuTime) * (numCPUs+1));
@@ -167,52 +168,58 @@ int main(int argc, char** argv)
 					focus = focus->surrounding.down;
 				break;
 		}
-	}
-	
-	endwin();
-	return 0;
-	
-	while((c = getch()) != 10 && c != 'q' && c != 'Q')
-	{
-		if(startFlag)
-			c = KEY_RESIZE;
-		if(c == KEY_RESIZE)
-		{
-			int diff = COLS - columns;
-			
-			if(startFlag)
-			{
-				startFlag = false;
-				diff = 0;
-				list = calloc(COLS, sizeof(float));
-			}
-			
-			if(diff < 0)
-				for(int i = 0; i < abs(diff); i++)
-					listShiftLeftAdd(list, listLen, 0);
-			
-			rows = LINES;
-			columns = COLS;
-			listLen = COLS;
-			
-			list = realloc(list, sizeof(float) * listLen);
-			
-			if(diff > 0)
-				for(int i = 0; i < diff; i++)
-					listShiftRightAdd(list, listLen, 0);
-		}
-
-		clear();
-//		for(int i = 0; i < numCPUs + 1; i++)
-//			mvprintw(i, 0, "%.2f%%\t%.2f%%\t%.2f%%\n", cpu[i].total, cpu[i].user, cpu[i].sys);
-		drawScreen(list, columns, rows);
-		refresh();
 		getCPUtime(cpu, numCPUs, then, now);
-		listShiftLeftAdd(list, listLen, cpu[0].total);
+		for(ptr = wins; ptr != NULL; ptr = ptr->next)
+		{
+			listShiftLeftAdd(ptr->data, ptr->dataLen, cpu[0].total);
+			drawScreen(ptr);
+		}
 	}
 	
 	endwin();
 	return 0;
+	
+//	while((c = getch()) != 10 && c != 'q' && c != 'Q')
+//	{
+//		if(startFlag)
+//			c = KEY_RESIZE;
+//		if(c == KEY_RESIZE)
+//		{
+//			int diff = COLS - columns;
+//			
+//			if(startFlag)
+//			{
+//				startFlag = false;
+//				diff = 0;
+//				list = calloc(COLS, sizeof(float));
+//			}
+//			
+//			if(diff < 0)
+//				for(int i = 0; i < abs(diff); i++)
+//					listShiftLeftAdd(list, listLen, 0);
+//			
+//			rows = LINES;
+//			columns = COLS;
+//			listLen = COLS;
+//			
+//			list = realloc(list, sizeof(float) * listLen);
+//			
+//			if(diff > 0)
+//				for(int i = 0; i < diff; i++)
+//					listShiftRightAdd(list, listLen, 0);
+//		}
+//
+//		clear();
+////		for(int i = 0; i < numCPUs + 1; i++)
+////			mvprintw(i, 0, "%.2f%%\t%.2f%%\t%.2f%%\n", cpu[i].total, cpu[i].user, cpu[i].sys);
+//		drawScreen(list, columns, rows);
+//		refresh();
+//		getCPUtime(cpu, numCPUs, then, now);
+//		listShiftLeftAdd(list, listLen, cpu[0].total);
+//	}
+//	
+//	endwin();
+//	return 0;
 }
 
 void remapArrows(struct windowlist* wins, struct windowlist* win)
@@ -250,6 +257,9 @@ void resizeWindowToFrame(struct windowlist* win)
 	mvwin(win->titlewin, win->frame.origin.y, win->frame.origin.x);
 	mvwin(win->labelwin, win->frame.origin.y+1, win->frame.origin.x);
 	mvwin(win->contentwin, win->frame.origin.y+1, win->frame.origin.x+3);
+	wclear(win->titlewin);
+	wclear(win->labelwin);
+	wclear(win->contentwin);
 	
 	newLen = win->frame.size.width-3;
 	diff = newLen - win->dataLen;
@@ -274,7 +284,7 @@ void resizeWindowToFrame(struct windowlist* win)
 //	mvwprintw(win->titlewin, 0, 3, "----Test Title----");
 	win->title = "----Test Title----";
 	mvwprintw(win->labelwin, 3, 0, "20%%");
-	mvwprintw(win->contentwin, 3, 3, "%d, %d, %d, %d        ", win->frame.origin.x, win->frame.origin.y, win->frame.size.width, win->frame.size.height);
+//	mvwprintw(win->contentwin, 3, 3, "%d, %d, %d, %d        ", win->frame.origin.x, win->frame.origin.y, win->frame.size.width, win->frame.size.height);
 }
 
 void splitV(struct windowlist* old)
@@ -488,33 +498,40 @@ void listShiftRightAdd(float* list, int len, float new)
 	list[0] = new;
 }
 
-void drawScreen(float* list, int width, int height)
+void drawScreen(struct windowlist* win)
 {
-	int indexes[width];
+	int* indexes = malloc(sizeof(int) * win->dataLen);
 	int axes[5];
+	int height = win->frame.size.height - 1;
+	int width = win->dataLen;
 	
 	for(int i = 0; i < 5; i++)
 		axes[i] = roundf((float) height - (float) height * (25.0*i)/100.0) - 1;
 	
 	for(int i = 0; i < width; i++)
 	{
-		indexes[i] = roundf((float) height - (float) height * list[i]/100.0) - 1;
+		indexes[i] = roundf((float) height - (float) height * win->data[i]/100.0) - 1;
 		
-		for(int j = indexes[i]; j < height; j++)
+		for(int j = 0; j < height; j++)
 		{
-			mvprintw(j, i, "*");
+			if(j >= indexes[i])
+				mvwaddch(win->contentwin, j, i, '*');
+			else
+				mvwaddch(win->contentwin, j, i, ' ');
 		}
 		
 		for(int j = 1; j < 4; j++)
 		{
-			attron(COLOR_PAIR(1));
+			wattron(win->contentwin, COLOR_PAIR(1));
 			if(axes[j] != indexes[i])
-				mvaddch(axes[j], i, ACS_HLINE);
+				mvwaddch(win->contentwin, axes[j], i, ACS_HLINE);
 			else
-				mvprintw(indexes[i], i, "*");
-			attroff(COLOR_PAIR(1));
+				mvwaddch(win->contentwin, indexes[i], i, '*');
+			wattroff(win->contentwin, COLOR_PAIR(1));
 		}
 	}
+	
+	free(indexes);
 }
 
 int getNumCPUs()
