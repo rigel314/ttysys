@@ -100,46 +100,4 @@ int main(int argc, char** argv)
 	
 	endwin();
 	return 0;
-	
-//	while((c = getch()) != 10 && c != 'q' && c != 'Q')
-//	{
-//		if(startFlag)
-//			c = KEY_RESIZE;
-//		if(c == KEY_RESIZE)
-//		{
-//			int diff = COLS - columns;
-//			
-//			if(startFlag)
-//			{
-//				startFlag = false;
-//				diff = 0;
-//				list = calloc(COLS, sizeof(float));
-//			}
-//			
-//			if(diff < 0)
-//				for(int i = 0; i < abs(diff); i++)
-//					listShiftLeftAdd(list, listLen, 0);
-//			
-//			rows = LINES;
-//			columns = COLS;
-//			listLen = COLS;
-//			
-//			list = realloc(list, sizeof(float) * listLen);
-//			
-//			if(diff > 0)
-//				for(int i = 0; i < diff; i++)
-//					listShiftRightAdd(list, listLen, 0);
-//		}
-//
-//		clear();
-////		for(int i = 0; i < numCPUs + 1; i++)
-////			mvprintw(i, 0, "%.2f%%\t%.2f%%\t%.2f%%\n", cpu[i].total, cpu[i].user, cpu[i].sys);
-//		drawScreen(list, columns, rows);
-//		refresh();
-//		getCPUtime(cpu, numCPUs, then, now);
-//		listShiftLeftAdd(list, listLen, cpu[0].total);
-//	}
-//	
-//	endwin();
-//	return 0;
 }
