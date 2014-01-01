@@ -13,6 +13,7 @@
 
 enum winFlags { TitleOff = 1, LabelOff = 1<<1, GridOff = 1<<2, ExpandedTitleOff = 1<<3, BorderOff = 1<<4 };
 enum winType { PercentChart };
+enum winDataType { CPUData, MemData, NetData };
 
 enum lineDir { HORIZ, VERT };
 
@@ -33,6 +34,8 @@ struct windowlist
 		struct windowlist* up;
 		struct windowlist* down;
 	} surrounding;
+	enum winDataType dataType;
+	int dataSource;
 	float* data;
 	int dataLen;
 };

@@ -263,6 +263,8 @@ struct windowlist* addWin(struct windowlist** wins)
 	new->surrounding.up = NULL;
 	new->surrounding.down = NULL;
 	new->frame = GRect(1, 1, COLS - 2, LINES - 2);
+	new->dataType = CPUData;
+	new->dataSource = 0;
 	new->data = NULL;
 	new->dataLen = 0;
 	
@@ -301,5 +303,5 @@ void freeWin(struct windowlist** wins, struct windowlist* win)
 	delwin(win->labelwin);
 	delwin(win->titlewin);
 	free(win->title);
+	free(win->data);
 }
-
