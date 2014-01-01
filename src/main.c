@@ -9,7 +9,6 @@
  *		Memory + Swap.
  *		Unsplit windows.
  *		New input method.
- *		Implement more window flags.
  *		More reasonable arrow keys.
  *		Corners in the border.
  *		Help window.
@@ -92,10 +91,13 @@ int main(int argc, char** argv)
 				break;
 			case 't':
 				focus->flags ^= wf_Title;
+				resizeWindowToFrame(focus);
 				break;
 			case 'l':
 				focus->flags ^= wf_Label;
+				resizeWindowToFrame(focus);
 				break;
+				
 			case 'h':
 				splitH(focus);
 				remapArrows(wins, wins);
@@ -104,6 +106,7 @@ int main(int argc, char** argv)
 				splitV(focus);
 				remapArrows(wins, wins);
 				break;
+				
 			case '\t':
 				focus = focus->next;
 				if(focus == NULL)

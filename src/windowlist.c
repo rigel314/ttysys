@@ -15,7 +15,7 @@ void drawScreen(struct windowlist* win)
 {
 	int* indexes = malloc(sizeof(int) * win->dataLen);
 	int axes[5];
-	int height = win->frame.size.height - 1;
+	int height = getContentFrame(win).size.height;
 	int width = win->dataLen;
 	
 	for(int i = 0; i < 5; i++)
@@ -74,22 +74,42 @@ void remapArrows(struct windowlist* wins, struct windowlist* win)
 	remapArrows(wins, win->next);
 }
 
+struct GRect getContentFrame(struct windowlist* win)
+{
+	struct GRect frame = win->frame;
+	
+	if(win->flags & wf_Title)
+	{
+		frame.origin.y++;
+		frame.size.height--;
+	}
+	
+	if(win->flags & wf_Label)
+	{
+		frame.origin.x += 3;
+		frame.size.width -= 3;
+	}
+	
+	return frame;
+}
+
 void resizeWindowToFrame(struct windowlist* win)
 {
 	int diff;
 	int newLen;
+	struct GRect contentFrame = getContentFrame(win);
 	
 	wresize(win->titlewin, 1, win->frame.size.width);
-	wresize(win->labelwin, win->frame.size.height-1, 3);
-	wresize(win->contentwin, win->frame.size.height-1, win->frame.size.width-3);
+	wresize(win->labelwin, contentFrame.size.height, 3);
+	wresize(win->contentwin, contentFrame.size.height, contentFrame.size.width);
 	mvwin(win->titlewin, win->frame.origin.y, win->frame.origin.x);
-	mvwin(win->labelwin, win->frame.origin.y+1, win->frame.origin.x);
-	mvwin(win->contentwin, win->frame.origin.y+1, win->frame.origin.x+3);
+	mvwin(win->labelwin, contentFrame.origin.y, win->frame.origin.x);
+	mvwin(win->contentwin, contentFrame.origin.y, contentFrame.origin.x);
 	wclear(win->titlewin);
 	wclear(win->labelwin);
 	wclear(win->contentwin);
 	
-	newLen = win->frame.size.width-3;
+	newLen = contentFrame.size.width;
 	diff = newLen - win->dataLen;
 	
 	if(win->dataLen == 0)
@@ -113,7 +133,7 @@ void resizeWindowToFrame(struct windowlist* win)
 	{
 		for(int i = 1; i < 4; i++)
 		{
-			int height = win->frame.size.height - 1;
+			int height = getContentFrame(win).size.height;
 			int row = roundf((float) height - (float) height * (25.0*i)/100.0) - 1;
 			char str[4];
 			
@@ -188,40 +208,52 @@ void splitH(struct windowlist* old)
 	printLine(borders, new->frame.origin.y, new->frame.origin.x - 1, VERT, new->frame.size.height);
 }
 
+void unSplit(struct windowlist* win)
+{
+	;
+}
+
 void refreshAll(struct windowlist* wins, struct windowlist* focus)
 {
 	struct windowlist* ptr;
 	
 	for(ptr = wins; ptr != NULL; ptr = ptr->next)
 	{
-		if(ptr == focus)
-			wattron(ptr->titlewin, COLOR_PAIR(2));
-		
-		if(ptr->dataType == CPUData)
+		if(ptr->flags & wf_Title)
 		{
-			strcpy(ptr->title, "CPU ");
-			if(ptr->dataSource == 0)
-				strcat(ptr->title, "Average");
-			else
-				sprintf(ptr->title + 4, "%d", ptr->dataSource);
+			if(ptr == focus)
+				wattron(ptr->titlewin, COLOR_PAIR(2));
 			
-			if(ptr->flags & wf_ExpandedTitle)
+			if(ptr->dataType == CPUData)
 			{
-				strcat(ptr->title, " - ");
-				sprintf(ptr->title + strlen(ptr->title), "%.2f%%", ptr->data[ptr->dataLen-1]);
+				strcpy(ptr->title, "CPU ");
+				if(ptr->dataSource == 0)
+					strcat(ptr->title, "Average");
+				else
+					sprintf(ptr->title + 4, "%d", ptr->dataSource);
+				
+				if(ptr->flags & wf_ExpandedTitle)
+				{
+					strcat(ptr->title, " - ");
+					sprintf(ptr->title + strlen(ptr->title), "%.2f%%", ptr->data[ptr->dataLen-1]);
+				}
+	
+				for(int i = strlen(ptr->title); i < 23; i++)
+					ptr->title[i] = ' ';
+				ptr->title[24] = '\0';
 			}
-
-			for(int i = strlen(ptr->title); i < 23; i++)
-				ptr->title[i] = ' ';
-			ptr->title[24] = '\0';
+			mvwaddstr(ptr->titlewin, 0, 3, ptr->title);
+			
+			if(ptr == focus)
+				wattroff(ptr->titlewin, COLOR_PAIR(2));
 		}
-		mvwaddstr(ptr->titlewin, 0, 3, ptr->title);
 		
-		if(ptr == focus)
-			wattroff(ptr->titlewin, COLOR_PAIR(2));
+		if(ptr->flags & wf_Title)
+			wrefresh(ptr->titlewin);
 		
-		wrefresh(ptr->titlewin);
-		wrefresh(ptr->labelwin);
+		if(ptr->flags & wf_Label)
+			wrefresh(ptr->labelwin);
+		
 		wrefresh(ptr->contentwin);
 	}
 }
