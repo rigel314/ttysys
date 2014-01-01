@@ -9,11 +9,10 @@
  *		Memory + Swap.
  *		Unsplit windows.
  *		New input method.
- *		More window flags.
+ *		Implement more window flags.
  *		More reasonable arrow keys.
  *		Corners in the border.
  *		Status bar.
- *		Border color.
  */
 
 #include <ncurses.h>
@@ -42,6 +41,7 @@ int main(int argc, char** argv)
 	start_color();
 	init_pair(1, COLOR_RED, COLOR_BLACK);
 	init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+	init_pair(3, COLOR_BLUE, COLOR_BLACK);
 	raw();
 	noecho();
 	curs_set(0);
@@ -52,7 +52,9 @@ int main(int argc, char** argv)
 	focus = addWin(&wins);
 	resizeWindowToFrame(focus);
 	
+	attron(COLOR_PAIR(3));
 	box(stdscr, 0, 0);
+	attroff(COLOR_PAIR(3));
 	
 	while((c = getch()))
 	{

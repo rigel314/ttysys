@@ -229,7 +229,10 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 void printLine(int row, int col, enum lineDir direction, int len)
 {
 	int i;
-	switch (direction) {
+	
+	attron(COLOR_PAIR(3));
+	switch (direction)
+	{
 		case HORIZ:
 			for(i=0;i<len;i++)
 				mvhline(row,col+i,ACS_HLINE,1);
@@ -241,6 +244,7 @@ void printLine(int row, int col, enum lineDir direction, int len)
 		default:
 			break;
 	}
+	attroff(COLOR_PAIR(3));
 }
 
 struct windowlist* addWin(struct windowlist** wins)
