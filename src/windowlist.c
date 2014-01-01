@@ -33,14 +33,17 @@ void drawScreen(struct windowlist* win)
 				mvwaddch(win->contentwin, j, i, ' ');
 		}
 		
-		for(int j = 1; j < 4; j++)
+		if(win->flags & wf_Grid)
 		{
-			wattron(win->contentwin, COLOR_PAIR(1));
-			if(axes[j] != indexes[i])
-				mvwaddch(win->contentwin, axes[j], i, ACS_HLINE);
-			else
-				mvwaddch(win->contentwin, indexes[i], i, '*');
-			wattroff(win->contentwin, COLOR_PAIR(1));
+			for(int j = 1; j < 4; j++)
+			{
+				wattron(win->contentwin, COLOR_PAIR(1));
+				if(axes[j] != indexes[i])
+					mvwaddch(win->contentwin, axes[j], i, ACS_HLINE);
+				else
+					mvwaddch(win->contentwin, indexes[i], i, '*');
+				wattroff(win->contentwin, COLOR_PAIR(1));
+			}
 		}
 	}
 	
@@ -106,9 +109,23 @@ void resizeWindowToFrame(struct windowlist* win)
 		for(int i = 0; i < diff; i++)
 			listShiftRightAdd(win->data, win->dataLen, 0);
 	
+	if(win->flags & wf_Label)
+	{
+		for(int i = 1; i < 4; i++)
+		{
+			int height = win->frame.size.height - 1;
+			int row = roundf((float) height - (float) height * (25.0*i)/100.0) - 1;
+			char str[4];
+			
+			sprintf(str, "%d%%", 25*i);
+			
+			mvwaddstr(win->labelwin, row, 0, str);
+		}
+	}
+	
 //	mvwprintw(win->titlewin, 0, 3, "----Test Title----");
 //	win->title = "----Test Title----";
-	mvwprintw(win->labelwin, 3, 0, "20%%");
+//	mvwprintw(win->labelwin, 3, 0, "20%%");
 //	mvwprintw(win->contentwin, 3, 3, "%d, %d, %d, %d        ", win->frame.origin.x, win->frame.origin.y, win->frame.size.width, win->frame.size.height);
 }
 
