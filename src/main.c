@@ -3,6 +3,17 @@
  *
  *  Created on: Dec 26, 2013
  *      Author: cody
+ *
+ *	TODO:
+ *		Comment this code.
+ *		Memory + Swap.
+ *		Unsplit windows.
+ *		New input method.
+ *		More window flags.
+ *		More reasonable arrow keys.
+ *		Corners in the border.
+ *		Status bar.
+ *		Border color.
  */
 
 #include <ncurses.h>
