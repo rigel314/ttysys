@@ -153,7 +153,7 @@ void splitV(struct windowlist* old)
 	resizeWindowToFrame(old);
 	resizeWindowToFrame(new);
 	
-	printLine(new->frame.origin.y - 1, new->frame.origin.x, HORIZ, new->frame.size.width);
+	printLine(borders, new->frame.origin.y - 1, new->frame.origin.x, HORIZ, new->frame.size.width);
 }
 
 void splitH(struct windowlist* old)
@@ -185,7 +185,7 @@ void splitH(struct windowlist* old)
 	resizeWindowToFrame(old);
 	resizeWindowToFrame(new);
 	
-	printLine(new->frame.origin.y, new->frame.origin.x - 1, VERT, new->frame.size.height);
+	printLine(borders, new->frame.origin.y, new->frame.origin.x - 1, VERT, new->frame.size.height);
 }
 
 void refreshAll(struct windowlist* wins, struct windowlist* focus)
@@ -226,25 +226,25 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 	}
 }
 
-void printLine(int row, int col, enum lineDir direction, int len)
+void printLine(WINDOW* WIN, int row, int col, enum lineDir direction, int len)
 {
 	int i;
 	
-	attron(COLOR_PAIR(3));
+	wattron(WIN, COLOR_PAIR(3));
 	switch (direction)
 	{
 		case HORIZ:
 			for(i=0;i<len;i++)
-				mvhline(row,col+i,ACS_HLINE,1);
+				mvwhline(WIN, row,col+i,ACS_HLINE,1);
 			break;
 		case VERT:
 			for(i=0;i<len;i++)
-				mvvline(row+i,col,ACS_VLINE,1);
+				mvwvline(WIN, row+i,col,ACS_VLINE,1);
 			break;
 		default:
 			break;
 	}
-	attroff(COLOR_PAIR(3));
+	wattroff(WIN, COLOR_PAIR(3));
 }
 
 struct windowlist* addWin(struct windowlist** wins)
@@ -270,7 +270,7 @@ struct windowlist* addWin(struct windowlist** wins)
 	new->surrounding.right = NULL;
 	new->surrounding.up = NULL;
 	new->surrounding.down = NULL;
-	new->frame = GRect(1, 1, COLS - 2, LINES - 2);
+	new->frame = GRect(1, 1, COLS - 2, LINES - 3);
 	new->dataType = CPUData;
 	new->dataSource = 0;
 	new->data = NULL;

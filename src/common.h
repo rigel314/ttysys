@@ -5,6 +5,8 @@
  *      Author: cody
  */
 
+#include <ncurses.h>
+
 #ifndef COMMON_H_
 #define COMMON_H_
 
@@ -28,5 +30,7 @@ struct GRect
 int strchrCount(char* s, char c);
 void listShiftLeftAdd(float* list, int len, float new);
 void listShiftRightAdd(float* list, int len, float new);
+
+extern WINDOW* borders;
 
 #endif /* COMMON_H_ */

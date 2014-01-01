@@ -46,7 +46,7 @@ void resizeWindowToFrame(struct windowlist* win);
 void splitV(struct windowlist* old);
 void splitH(struct windowlist* old);
 void refreshAll(struct windowlist* wins, struct windowlist* focus);
-void printLine(int row, int col, enum lineDir direction, int len);
+void printLine(WINDOW* WIN, int row, int col, enum lineDir direction, int len);
 struct windowlist* addWin(struct windowlist** wins);
 void freeWin(struct windowlist** wins, struct windowlist* win);
 

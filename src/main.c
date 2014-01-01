@@ -20,6 +20,8 @@
 #include "windowlist.h"
 #include "cpuInfo.h"
 
+WINDOW* borders;
+
 int main(int argc, char** argv)
 {
 	int c;
@@ -30,6 +32,7 @@ int main(int argc, char** argv)
 	struct windowlist* wins = NULL;
 	struct windowlist* focus;
 	struct windowlist* ptr;
+	WINDOW* status;
 	
 	// creating structs
 	then = malloc(sizeof(struct cpuTime) * (numCPUs+1));
@@ -42,6 +45,7 @@ int main(int argc, char** argv)
 	init_pair(1, COLOR_RED, COLOR_BLACK);
 	init_pair(2, COLOR_YELLOW, COLOR_BLACK);
 	init_pair(3, COLOR_BLUE, COLOR_BLACK);
+	init_pair(4, COLOR_BLACK, COLOR_WHITE);
 	raw();
 	noecho();
 	curs_set(0);
@@ -49,12 +53,26 @@ int main(int argc, char** argv)
 	halfdelay(1);
 	refresh();
 	
+	// Add first window and setup internal WINDOW*s
 	focus = addWin(&wins);
 	resizeWindowToFrame(focus);
 	
-	attron(COLOR_PAIR(3));
-	box(stdscr, 0, 0);
-	attroff(COLOR_PAIR(3));
+	// Make the borders WINDOW*
+	borders = newwin(LINES - 1, COLS, 0, 0);
+	status = newwin(1, COLS, LINES - 1, 0);
+	
+	// Blue box for first border
+	wattron(borders, COLOR_PAIR(3));
+	box(borders, 0, 0);
+	wattroff(borders, COLOR_PAIR(3));
+
+	// Create status line
+	move(LINES - 1, 0);
+	wattron(status, COLOR_PAIR(4));
+	for(int i = 0; i < COLS-12; i++)
+		waddch(status, ' ');
+	waddstr(status, "'?' for help");
+	wattroff(status, COLOR_PAIR(4));
 	
 	while((c = getch()))
 	{
@@ -101,7 +119,9 @@ int main(int argc, char** argv)
 		for(ptr = wins; ptr != NULL; ptr = ptr->next)
 			drawScreen(ptr);
 
-		refresh();
+//		refresh();
+		wrefresh(borders);
+		wrefresh(status);
 		refreshAll(wins, focus);
 		
 		if(getCPUtime(cpu, numCPUs, then, now) == 1)
