@@ -23,7 +23,7 @@ struct windowlist
 	WINDOW* titlewin;
 	WINDOW* contentwin;
 	WINDOW* labelwin;
-	char* title;
+	char title[25];
 	int flags;
 	enum winType type;
 	struct GRect frame;
@@ -40,6 +40,7 @@ struct windowlist
 	int dataLen;
 };
 
+//void dataSourceChanged(struct windowlist* win);
 void drawScreen(struct windowlist* win);
 void remapArrows(struct windowlist* wins, struct windowlist* win);
 void resizeWindowToFrame(struct windowlist* win);

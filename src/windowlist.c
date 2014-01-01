@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <ncurses.h>
+#include <string.h>
 #include "windowlist.h"
 
 void drawScreen(struct windowlist* win)
@@ -106,7 +107,7 @@ void resizeWindowToFrame(struct windowlist* win)
 			listShiftRightAdd(win->data, win->dataLen, 0);
 	
 //	mvwprintw(win->titlewin, 0, 3, "----Test Title----");
-	win->title = "----Test Title----";
+//	win->title = "----Test Title----";
 	mvwprintw(win->labelwin, 3, 0, "20%%");
 //	mvwprintw(win->contentwin, 3, 3, "%d, %d, %d, %d        ", win->frame.origin.x, win->frame.origin.y, win->frame.size.width, win->frame.size.height);
 }
@@ -204,14 +205,24 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 	
 	for(ptr = wins; ptr != NULL; ptr = ptr->next)
 	{
-//		box(ptr->titlewin, 0, 0);
-//		box(ptr->labelwin, 0, 0);
-//		box(ptr->contentwin, 0, 0);
-		
 		if(ptr == focus)
 			wattron(ptr->titlewin, COLOR_PAIR(2));
 		
-		mvwprintw(ptr->titlewin, 0, 3, ptr->title);
+		if(ptr->dataType == CPUData)
+		{
+			strcpy(ptr->title, "CPU ");
+			if(ptr->dataSource == 0)
+				strcat(ptr->title, "Average");
+			else
+				sprintf(ptr->title + 4, "%d", ptr->dataSource);
+			strcat(ptr->title, " - ");
+			sprintf(ptr->title + strlen(ptr->title), "%.2f", ptr->data[ptr->dataLen-1]);
+			strcat(ptr->title, "%");
+			for(int i = strlen(ptr->title); i < 23; i++)
+				ptr->title[i] = ' ';
+			ptr->title[24] = '\0';
+		}
+		mvwaddstr(ptr->titlewin, 0, 3, ptr->title);
 		
 		if(ptr == focus)
 			wattroff(ptr->titlewin, COLOR_PAIR(2));
@@ -255,7 +266,7 @@ struct windowlist* addWin(struct windowlist** wins)
 	new->titlewin = newwin(0, 0, 0, 0);
 	new->contentwin = newwin(0, 0, 0, 0);
 	new->labelwin = newwin(0, 0, 0, 0);
-	new->title = NULL;
+	new->title[0] = 0;
 	new->flags = 0;
 	new->type = PercentChart;
 	new->surrounding.left = NULL;
@@ -302,6 +313,5 @@ void freeWin(struct windowlist** wins, struct windowlist* win)
 	delwin(win->contentwin);
 	delwin(win->labelwin);
 	delwin(win->titlewin);
-	free(win->title);
 	free(win->data);
 }

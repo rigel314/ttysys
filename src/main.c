@@ -85,6 +85,11 @@ int main(int argc, char** argv)
 					focus = focus->surrounding.down;
 				break;
 		}
+		if(c >= '0' && c <= '0'+numCPUs)
+		{
+			focus->dataSource = c - '0';
+//			dataSourceChanged(focus);
+		}
 		
 		for(ptr = wins; ptr != NULL; ptr = ptr->next)
 			drawScreen(ptr);
@@ -95,7 +100,7 @@ int main(int argc, char** argv)
 		if(getCPUtime(cpu, numCPUs, then, now) == 1)
 			continue;
 		for(ptr = wins; ptr != NULL; ptr = ptr->next)
-			listShiftLeftAdd(ptr->data, ptr->dataLen, cpu[0].total);
+			listShiftLeftAdd(ptr->data, ptr->dataLen, cpu[ptr->dataSource].total);
 	}
 	
 	endwin();
