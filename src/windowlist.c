@@ -23,7 +23,7 @@ void drawScreen(struct windowlist* win)
 	
 	for(int i = 0; i < width; i++)
 	{
-		indexes[i] = roundf((float) height - (float) height * win->data[i]/100.0) - 1;
+		indexes[i] = roundf((float) height - (float) height * win->data[i]/100.0);
 		
 		for(int j = 0; j < height; j++)
 		{
