@@ -215,9 +215,13 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 				strcat(ptr->title, "Average");
 			else
 				sprintf(ptr->title + 4, "%d", ptr->dataSource);
-			strcat(ptr->title, " - ");
-			sprintf(ptr->title + strlen(ptr->title), "%.2f", ptr->data[ptr->dataLen-1]);
-			strcat(ptr->title, "%");
+			
+			if(ptr->flags & wf_ExpandedTitle)
+			{
+				strcat(ptr->title, " - ");
+				sprintf(ptr->title + strlen(ptr->title), "%.2f%%", ptr->data[ptr->dataLen-1]);
+			}
+
 			for(int i = strlen(ptr->title); i < 23; i++)
 				ptr->title[i] = ' ';
 			ptr->title[24] = '\0';
@@ -267,7 +271,7 @@ struct windowlist* addWin(struct windowlist** wins)
 	new->contentwin = newwin(0, 0, 0, 0);
 	new->labelwin = newwin(0, 0, 0, 0);
 	new->title[0] = 0;
-	new->flags = 0;
+	new->flags = wf_Title | wf_Label | wf_Grid | wf_ExpandedTitle | wf_Border;
 	new->type = PercentChart;
 	new->surrounding.left = NULL;
 	new->surrounding.right = NULL;

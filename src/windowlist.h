@@ -11,7 +11,7 @@
 #include "common.h"
 #include <ncurses.h>
 
-enum winFlags { TitleOff = 1, LabelOff = 1<<1, GridOff = 1<<2, ExpandedTitleOff = 1<<3, BorderOff = 1<<4 };
+enum winFlags { wf_Title = 1, wf_Label = 1<<1, wf_Grid = 1<<2, wf_ExpandedTitle = 1<<3, wf_Border = 1<<4 };
 enum winType { PercentChart };
 enum winDataType { CPUData, MemData, NetData };
 
