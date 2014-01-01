@@ -12,7 +12,7 @@
  *		Implement more window flags.
  *		More reasonable arrow keys.
  *		Corners in the border.
- *		Status bar.
+ *		Help window.
  */
 
 #include <ncurses.h>
@@ -81,6 +81,21 @@ int main(int argc, char** argv)
 		
 		switch (c)
 		{
+			case '?':
+//				showHelp();
+				break;
+			case 'g':
+				focus->flags ^= wf_Grid;
+				break;
+			case 'e':
+				focus->flags ^= wf_ExpandedTitle;
+				break;
+			case 't':
+				focus->flags ^= wf_Title;
+				break;
+			case 'l':
+				focus->flags ^= wf_Label;
+				break;
 			case 'h':
 				splitH(focus);
 				remapArrows(wins, wins);
