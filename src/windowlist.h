@@ -40,13 +40,11 @@ struct windowlist
 	int dataLen;
 };
 
-//void dataSourceChanged(struct windowlist* win);
 void drawScreen(struct windowlist* win);
 void remapArrows(struct windowlist* wins, struct windowlist* win);
 void resizeWindowToFrame(struct windowlist* win);
 void splitV(struct windowlist* old);
 void splitH(struct windowlist* old);
-//void writeAllRefresh(struct windowlist* list);
 void refreshAll(struct windowlist* wins, struct windowlist* focus);
 void printLine(int row, int col, enum lineDir direction, int len);
 struct windowlist* addWin(struct windowlist** wins);

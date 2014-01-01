@@ -122,11 +122,6 @@ void resizeWindowToFrame(struct windowlist* win)
 			mvwaddstr(win->labelwin, row, 0, str);
 		}
 	}
-	
-//	mvwprintw(win->titlewin, 0, 3, "----Test Title----");
-//	win->title = "----Test Title----";
-//	mvwprintw(win->labelwin, 3, 0, "20%%");
-//	mvwprintw(win->contentwin, 3, 3, "%d, %d, %d, %d        ", win->frame.origin.x, win->frame.origin.y, win->frame.size.width, win->frame.size.height);
 }
 
 void splitV(struct windowlist* old)
@@ -154,13 +149,6 @@ void splitV(struct windowlist* old)
 	}
 	
 	new->frame.origin.y = old->frame.origin.y + old->frame.size.height + 1;
-//	new->frame.origin.x = old->frame.origin.x;
-	
-//	new->surrounding = old->surrounding;
-//	old->surrounding.down = new;
-//	new->surrounding.up = old;
-//	if(new->surrounding.down && new->surrounding.down->frame.origin.x == new->frame.origin.x)
-//		new->surrounding.down->surrounding.up = new;
 	
 	resizeWindowToFrame(old);
 	resizeWindowToFrame(new);
@@ -192,29 +180,13 @@ void splitH(struct windowlist* old)
 		new->frame.size.width = old->frame.size.width - 1;
 	}
 	
-//	new->frame.origin.y = old->frame.origin.y;
 	new->frame.origin.x = old->frame.origin.x + old->frame.size.width + 1;
-	
-//	new->surrounding = old->surrounding;
-//	old->surrounding.right = new;
-//	new->surrounding.left = old;
-//	if(new->surrounding.right && new->surrounding.right->frame.origin.y == new->frame.origin.y)
-//		new->surrounding.right->surrounding.left = new;
 	
 	resizeWindowToFrame(old);
 	resizeWindowToFrame(new);
 	
 	printLine(new->frame.origin.y, new->frame.origin.x - 1, VERT, new->frame.size.height);
 }
-
-//void writeAllRefresh(struct windowlist* list)
-//{
-//	resizeAll(list);
-//	writeContents(list);
-//	writeTitles(list);
-//	refreshAll(list);
-//	return;
-//}
 
 void refreshAll(struct windowlist* wins, struct windowlist* focus)
 {

@@ -61,7 +61,6 @@ struct cpuTime parseLine(char* str, int len)
 	memcpy(copy, str, len+1);
 	for(int i = 0; i < len; i++)
 	{
-//		printf("%d: %d\n", i, j);
 		if(copy[i] < ' ')
 			copy[i] = '\0';
 		if(copy[i] == ' ')

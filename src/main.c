@@ -17,11 +17,6 @@ int main(int argc, char** argv)
 	struct cpuTime* now;
 	struct cpuPercent* cpu;
 	int numCPUs = getNumCPUs();
-//	float* list = NULL;
-//	int listLen;
-//	int rows;
-//	int columns = 0;
-//	bool startFlag = true;
 	struct windowlist* wins = NULL;
 	struct windowlist* focus;
 	struct windowlist* ptr;
@@ -88,7 +83,6 @@ int main(int argc, char** argv)
 		if(c >= '0' && c <= '0'+numCPUs)
 		{
 			focus->dataSource = c - '0';
-//			dataSourceChanged(focus);
 		}
 		
 		for(ptr = wins; ptr != NULL; ptr = ptr->next)
