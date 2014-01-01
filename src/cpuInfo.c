@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ncurses.h>
 #include <sys/select.h>
 #include "cpuInfo.h"
 #include "common.h"
@@ -125,6 +126,9 @@ int getCPUtime(struct cpuPercent* cpu, int numCPUs, struct cpuTime* first, struc
 	// Wait 1 second. Or gather input.
 	select(1, &set, NULL, NULL, &wait);
 	
+//	if(FD_ISSET(0, &set))
+//		return 1;
+	
 	readCPUs(numCPUs, second);
 
 	// do math to calculate percentage
@@ -132,7 +136,7 @@ int getCPUtime(struct cpuPercent* cpu, int numCPUs, struct cpuTime* first, struc
 	{
 		numEvents = second[i].total - first[i].total;
 		if(numEvents == 0)
-			return 0;
+			continue;
 		
 		cpu[i].user = (float) (second[i].user - first[i].user) / (float) numEvents * 100.0;
 		cpu[i].sys = (float) (second[i].sys - first[i].sys) / (float) numEvents * 100.0;

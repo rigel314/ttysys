@@ -50,9 +50,6 @@ int main(int argc, char** argv)
 	
 	while((c = getch()))
 	{
-		refresh();
-		refreshAll(wins, focus);
-		
 		if(c == 10)
 			break;
 		
@@ -88,12 +85,17 @@ int main(int argc, char** argv)
 					focus = focus->surrounding.down;
 				break;
 		}
-		getCPUtime(cpu, numCPUs, then, now);
+		
 		for(ptr = wins; ptr != NULL; ptr = ptr->next)
-		{
-			listShiftLeftAdd(ptr->data, ptr->dataLen, cpu[0].total);
 			drawScreen(ptr);
-		}
+
+		refresh();
+		refreshAll(wins, focus);
+		
+		if(getCPUtime(cpu, numCPUs, then, now) == 1)
+			continue;
+		for(ptr = wins; ptr != NULL; ptr = ptr->next)
+			listShiftLeftAdd(ptr->data, ptr->dataLen, cpu[0].total);
 	}
 	
 	endwin();
