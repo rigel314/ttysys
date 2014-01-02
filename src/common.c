@@ -5,6 +5,45 @@
  *      Author: cody
  */
 
+#include <ncurses.h>
+#include "common.h"
+
+void showHelp()
+{
+	int c;
+	WINDOW* bwin = newwin(16, 70, LINES / 2 - 8, COLS / 2 - 35);
+	WINDOW* hwin = newwin(14, 68, LINES / 2 - 8 + 1, COLS / 2 - 35 + 1);
+	
+	box(bwin, 0, 0);
+	mvwprintw(hwin, 0, 0, 	"%s v%s\n"
+							"Lots of keys do things:\n"
+							"  ?            This help.\n"
+							"  h            Split current window horizontally.\n"
+							"  v            Split current window vertically.\n"
+							"  Tab          Move to next window in order of creation.\n"
+							"  Arrow Keys   Move to next window on screen in direction pressed.\n"
+							"  g            Toggle grid for selected window.\n"
+							"  e            Toggle value display in current window's title.\n"
+							"  t            Toggle display of current window's title bar.\n"
+							"  l            Toggle display of current window's label sidebar.\n"
+							"  q            Quit this program.\n"
+							"\n"
+							"Press Enter to dismiss this help.",
+							AppName, AppVers);
+	
+	wrefresh(bwin);
+	wrefresh(hwin);
+	
+	while((c = getch()))
+	{
+		if(c == 10)
+			break;
+	}
+	
+	delwin(hwin);
+	delwin(bwin);
+}
+
 int strchrCount(char* s, char c)
 {
 	int i;

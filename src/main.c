@@ -8,10 +8,9 @@
  *		Comment this code.
  *		Memory + Swap.
  *		Unsplit windows.
- *		New input method.
+ *		New input method. + New help window.
  *		More reasonable arrow keys.
  *		Corners in the border.
- *		Help window.
  */
 
 #include <ncurses.h>
@@ -75,13 +74,21 @@ int main(int argc, char** argv)
 	
 	while((c = getch()))
 	{
-		if(c == 10)
+		if(c == 10 || (c & ~('q'-'Q')) == 'Q')
 			break;
 		
 		switch (c)
 		{
 			case '?':
-//				showHelp();
+				showHelp();
+				foreachLinkedListElem(struct windowlist*, ptr, wins)
+				{
+					touchwin(ptr->titlewin);
+					touchwin(ptr->labelwin);
+					touchwin(ptr->contentwin);
+				}
+				touchwin(borders);
+				touchwin(status);
 				break;
 			case 'g':
 				focus->flags ^= wf_Grid;
