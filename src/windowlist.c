@@ -378,9 +378,6 @@ void freeWin(struct windowlist** wins, struct windowlist* win)
 		ptr->next = win->next;
 	}
 	
-//	werase(win->contentwin);
-//	werase(win->labelwin);
-//	werase(win->titlewin);
 	delwin(win->contentwin);
 	delwin(win->labelwin);
 	delwin(win->titlewin);
