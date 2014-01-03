@@ -149,6 +149,9 @@ void splitV(struct windowlist* old)
 	struct windowlist* new;
 	bool parity;
 	
+	if(old->frame.size.height < 4)
+		return;
+
 	new = addWin(&old);
 	if(!new)
 		return;
@@ -180,6 +183,9 @@ void splitH(struct windowlist* old)
 {
 	struct windowlist* new;
 	bool parity;
+
+	if(old->frame.size.width < 6)
+		return;
 	
 	new = addWin(&old);
 	if(!new)
@@ -208,9 +214,38 @@ void splitH(struct windowlist* old)
 	printLine(borders, new->frame.origin.y, new->frame.origin.x - 1, VERT, new->frame.size.height);
 }
 
-void unSplit(struct windowlist* win)
+void unSplit(struct windowlist** wins, struct windowlist** win)
 {
-	;
+	struct windowlist** surrPtr;
+	
+	if(!wins || !*wins || !win || !*win)
+		return;
+	
+	for(surrPtr = &(*win)->surrounding.left; surrPtr <= &(*win)->surrounding.down; surrPtr++)
+	{
+		struct windowlist* ptr = *surrPtr;
+		if(ptr)
+		{
+			if( (ptr->frame.size.height == (*win)->frame.size.height && abs(ptr->frame.size.width - (*win)->frame.size.width) <= 1) ||
+				(ptr->frame.size.width == (*win)->frame.size.width && abs(ptr->frame.size.height - (*win)->frame.size.height) <= 1))
+			{
+				if(surrPtr < &(*win)->surrounding.up)
+					ptr->frame = GRect(	min(ptr->frame.origin.x, (*win)->frame.origin.x),
+										min(ptr->frame.origin.y, (*win)->frame.origin.y),
+										ptr->frame.size.width + (*win)->frame.size.width + 1,
+										ptr->frame.size.height);
+				else
+					ptr->frame = GRect(	min(ptr->frame.origin.x, (*win)->frame.origin.x),
+										min(ptr->frame.origin.y, (*win)->frame.origin.y),
+										ptr->frame.size.width,
+										ptr->frame.size.height + (*win)->frame.size.height + 1);
+				resizeWindowToFrame(ptr);
+				freeWin(wins, *win);
+				*win = ptr;
+				break;
+			}
+		}
+	}
 }
 
 void refreshAll(struct windowlist* wins, struct windowlist* focus)
@@ -329,18 +364,26 @@ void freeWin(struct windowlist** wins, struct windowlist* win)
 	if(!wins || !*wins)
 		return;
 	
-	for(ptr = *wins; ptr->next != win && ptr->next != NULL; ptr = ptr->next);
+	if(*wins == win)
+	{
+		*wins = win->next;
+	}
+	else
+	{
+		for(ptr = *wins; ptr->next != win && ptr->next != NULL; ptr = ptr->next);
 	
-	if(!ptr->next)
-		return;
+		if(!ptr->next)
+			return;
+		
+		ptr->next = win->next;
+	}
 	
-	ptr->next = win->next;
-	
-	werase(win->contentwin);
-	werase(win->labelwin);
-	werase(win->titlewin);
+//	werase(win->contentwin);
+//	werase(win->labelwin);
+//	werase(win->titlewin);
 	delwin(win->contentwin);
 	delwin(win->labelwin);
 	delwin(win->titlewin);
 	free(win->data);
+	free(win);
 }

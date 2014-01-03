@@ -7,7 +7,6 @@
  *	TODO:
  *		Comment this code.
  *		Memory + Swap.
- *		Unsplit windows.
  *		New input method. + New help window.
  *		More reasonable arrow keys.
  *		Corners in the border.
@@ -74,7 +73,7 @@ int main(int argc, char** argv)
 	
 	while((c = getch()))
 	{
-		if(c == 10 || (c & ~('q'-'Q')) == 'Q')
+		if((c | ASCIIshiftBit) == 'q')
 			break;
 		
 		switch (c)
@@ -111,6 +110,10 @@ int main(int argc, char** argv)
 				break;
 			case 'v':
 				splitV(focus);
+				remapArrows(wins, wins);
+				break;
+			case 'u':
+				unSplit(&wins, &focus);
 				remapArrows(wins, wins);
 				break;
 				

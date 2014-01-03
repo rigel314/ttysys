@@ -11,8 +11,8 @@
 void showHelp()
 {
 	int c;
-	WINDOW* bwin = newwin(16, 70, LINES / 2 - 8, COLS / 2 - 35);
-	WINDOW* hwin = newwin(14, 68, LINES / 2 - 8 + 1, COLS / 2 - 35 + 1);
+	WINDOW* bwin = newwin(17, 70, LINES / 2 - 8, COLS / 2 - 35);
+	WINDOW* hwin = newwin(15, 68, LINES / 2 - 8 + 1, COLS / 2 - 35 + 1);
 	
 	box(bwin, 0, 0);
 	mvwprintw(hwin, 0, 0, 	"%s v%s\n"
@@ -20,6 +20,7 @@ void showHelp()
 							"  ?            This help.\n"
 							"  h            Split current window horizontally.\n"
 							"  v            Split current window vertically.\n"
+							"  u            Un-split current window.\n"
 							"  Tab          Move to next window in order of creation.\n"
 							"  Arrow Keys   Move to next window on screen in direction pressed.\n"
 							"  g            Toggle grid for selected window.\n"

@@ -13,6 +13,10 @@
 #define AppName "ttyload"
 #define AppVers "0.1"
 
+#define ASCIIshiftBit 0x20
+
+#define min(x, y) ((x)<(y)?(x):(y))
+#define max(x, y) ((x)>(y)?(x):(y))
 #define foreachLinkedListElem(type, ptr, list) for(type ptr = list; ptr != NULL; ptr = ptr->next)
 
 struct GPoint
