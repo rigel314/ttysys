@@ -125,8 +125,8 @@ int getCPUtime(struct cpuPercent* cpu, int numCPUs, struct cpuTime* first, struc
 	// Wait 1 second. Or gather input.
 	select(1, &set, NULL, NULL, &wait);
 	
-//	if(FD_ISSET(0, &set))
-//		return 1;
+	if(FD_ISSET(0, &set))
+		return 1;
 	
 	readCPUs(numCPUs, second);
 
