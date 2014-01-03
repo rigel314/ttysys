@@ -263,7 +263,7 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 			{
 				strcpy(ptr->title, "CPU ");
 				if(ptr->dataSource == 0)
-					strcat(ptr->title, "Average");
+					strcat(ptr->title, "Summary");
 				else
 					sprintf(ptr->title + 4, "%d", ptr->dataSource);
 				
