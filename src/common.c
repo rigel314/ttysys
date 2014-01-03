@@ -11,8 +11,8 @@
 void showHelp()
 {
 	int c;
-	WINDOW* bwin = newwin(17, 70, LINES / 2 - 8, COLS / 2 - 35);
-	WINDOW* hwin = newwin(15, 68, LINES / 2 - 8 + 1, COLS / 2 - 35 + 1);
+	WINDOW* bwin = newwin(18, 70, LINES / 2 - 9, COLS / 2 - 35);
+	WINDOW* hwin = newwin(16, 68, LINES / 2 - 9 + 1, COLS / 2 - 35 + 1);
 	
 	box(bwin, 0, 0);
 	mvwprintw(hwin, 0, 0, 	"%s v%s\n"
@@ -23,6 +23,7 @@ void showHelp()
 							"  u            Un-split current window.\n"
 							"  Tab          Move to next window in order of creation.\n"
 							"  Arrow Keys   Move to next window on screen in direction pressed.\n"
+							"  Numbers 0-9  Set data source to CPU #. '0' means give a summary.\n"
 							"  g            Toggle grid for selected window.\n"
 							"  e            Toggle value display in current window's title.\n"
 							"  t            Toggle display of current window's title bar.\n"

@@ -139,9 +139,10 @@ int main(int argc, char** argv)
 					focus = focus->surrounding.down;
 				break;
 		}
-		if(c >= '0' && c <= '0'+numCPUs)
+		if(c >= '0' && c <= '9')
 		{
-			focus->dataSource = c - '0';
+			if(c - '0' < numCPUs + 1)
+				focus->dataSource = c - '0';
 		}
 		
 		for(ptr = wins; ptr != NULL; ptr = ptr->next)
