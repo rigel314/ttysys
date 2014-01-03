@@ -3,38 +3,21 @@
  *
  *  Created on: Dec 26, 2013
  *      Author: cody
+ *
+ *	TODO:
+ *		Comment this code.
+ *		Memory + Swap.
+ *		New input method. + New help window.
+ *		More reasonable arrow keys.
+ *		Corners in the border.
  */
 
 #include <ncurses.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <time.h>
-#include <math.h>
-#include <sys/select.h>
+#include "windowlist.h"
+#include "cpuInfo.h"
 
-struct cpuTime
-{
-	unsigned long long total;
-	long user;
-	long sys;
-};
-struct cpuPercent
-{
-	float total;
-	float user;
-	float sys;
-};
-
-void listShiftLeftAdd(float* list, int len, float new);
-void listShiftRightAdd(float* list, int len, float new);
-void drawScreen(float* list, int width, int height);
-int getNumCPUs();
-int strchrCount(char* s, char c);
-struct cpuTime parseLine(char* str, int len);
-int readCPUs(int numCPUs, struct cpuTime* now);
-int getCPUtime(struct cpuPercent* cpu, int numCPUs, struct cpuTime* first, struct cpuTime* second);
+WINDOW* borders;
 
 int main(int argc, char** argv)
 {
@@ -43,11 +26,10 @@ int main(int argc, char** argv)
 	struct cpuTime* now;
 	struct cpuPercent* cpu;
 	int numCPUs = getNumCPUs();
-	float* list = NULL;
-	int listLen;
-	int rows;
-	int columns = 0;
-	bool startFlag = true;
+	struct windowlist* wins = NULL;
+	struct windowlist* focus;
+	struct windowlist* ptr;
+	WINDOW* status;
 	
 	// creating structs
 	then = malloc(sizeof(struct cpuTime) * (numCPUs+1));
@@ -58,237 +40,125 @@ int main(int argc, char** argv)
 	initscr();
 	start_color();
 	init_pair(1, COLOR_RED, COLOR_BLACK);
+	init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+	init_pair(3, COLOR_BLUE, COLOR_BLACK);
+	init_pair(4, COLOR_BLACK, COLOR_WHITE);
 	raw();
 	noecho();
 	curs_set(0);
 	keypad(stdscr,TRUE);
-	halfdelay(3);
+	halfdelay(1);
+	refresh();
 	
-	while((c = getch()) != 10 && c != 'q' && c != 'Q')
-	{
-		if(startFlag)
-			c = KEY_RESIZE;
-		if(c == KEY_RESIZE)
-		{
-			int diff = COLS - columns;
-			
-			if(startFlag)
-			{
-				startFlag = false;
-				diff = 0;
-				list = calloc(COLS, sizeof(float));
-			}
-			
-			if(diff < 0)
-				for(int i = 0; i < abs(diff); i++)
-					listShiftLeftAdd(list, listLen, 0);
-			
-			rows = LINES;
-			columns = COLS;
-			listLen = COLS;
-			
-			list = realloc(list, sizeof(float) * listLen);
-			
-			if(diff > 0)
-				for(int i = 0; i < diff; i++)
-					listShiftRightAdd(list, listLen, 0);
-		}
+	// Add first window and setup internal WINDOW*s
+	focus = addWin(&wins);
+	resizeWindowToFrame(focus);
+	
+	// Make the borders WINDOW*
+	borders = newwin(LINES - 1, COLS, 0, 0);
+	status = newwin(1, COLS, LINES - 1, 0);
+	
+	// Blue box for first border
+	wattron(borders, COLOR_PAIR(3));
+	box(borders, 0, 0);
+	wattroff(borders, COLOR_PAIR(3));
 
-		clear();
-//		for(int i = 0; i < numCPUs + 1; i++)
-//			mvprintw(i, 0, "%.2f%%\t%.2f%%\t%.2f%%\n", cpu[i].total, cpu[i].user, cpu[i].sys);
-		drawScreen(list, columns, rows);
-		refresh();
-		getCPUtime(cpu, numCPUs, then, now);
-		listShiftLeftAdd(list, listLen, cpu[0].total);
+	// Create status line
+	move(LINES - 1, 0);
+	wattron(status, COLOR_PAIR(4));
+	for(int i = 0; i < COLS-12; i++)
+		waddch(status, ' ');
+	waddstr(status, "'?' for help");
+	wattroff(status, COLOR_PAIR(4));
+	
+	while((c = getch()))
+	{
+		if((c | ASCIIshiftBit) == 'q')
+			break;
+		
+		switch (c)
+		{
+			case '?':
+				showHelp();
+				foreachLinkedListElem(struct windowlist*, ptr, wins)
+				{
+					touchwin(ptr->titlewin);
+					touchwin(ptr->labelwin);
+					touchwin(ptr->contentwin);
+				}
+				touchwin(borders);
+				touchwin(status);
+				break;
+			case 'g':
+				focus->flags ^= wf_Grid;
+				break;
+			case 'e':
+				focus->flags ^= wf_ExpandedTitle;
+				break;
+			case 't':
+				focus->flags ^= wf_Title;
+				resizeWindowToFrame(focus);
+				break;
+			case 'l':
+				focus->flags ^= wf_Label;
+				resizeWindowToFrame(focus);
+				break;
+				
+			case 'h':
+				splitH(focus);
+				remapArrows(wins, wins);
+				break;
+			case 'v':
+				splitV(focus);
+				remapArrows(wins, wins);
+				break;
+			case 'u':
+				unSplit(&wins, &focus);
+				remapArrows(wins, wins);
+				break;
+				
+			case '\t':
+				focus = focus->next;
+				if(focus == NULL)
+					focus = wins;
+				break;
+			case KEY_RIGHT:
+				if(focus->surrounding.right != NULL)
+					focus = focus->surrounding.right;
+				break;
+			case KEY_LEFT:
+				if(focus->surrounding.left != NULL)
+					focus = focus->surrounding.left;
+				break;
+			case KEY_UP:
+				if(focus->surrounding.up != NULL)
+					focus = focus->surrounding.up;
+				break;
+			case KEY_DOWN:
+				if(focus->surrounding.down != NULL)
+					focus = focus->surrounding.down;
+				break;
+		}
+		if(c >= '0' && c <= '9')
+		{
+			if(c - '0' < numCPUs + 1)
+				focus->dataSource = c - '0';
+		}
+		
+		for(ptr = wins; ptr != NULL; ptr = ptr->next)
+			drawScreen(ptr);
+
+//		refresh();
+		wrefresh(borders);
+		wrefresh(status);
+		refreshAll(wins, focus);
+		
+		if(getCPUtime(cpu, numCPUs, then, now) == 1)
+			continue;
+		for(ptr = wins; ptr != NULL; ptr = ptr->next)
+			listShiftLeftAdd(ptr->data, ptr->dataLen, cpu[ptr->dataSource].total);
 	}
 	
 	endwin();
-	return 0;
-}
-
-void listShiftLeftAdd(float* list, int len, float new)
-{
-	for(int i = 0; i < len-1; i++)
-	{
-		list[i] = list[i+1];
-	}
-	list[len-1] = new;
-}
-
-void listShiftRightAdd(float* list, int len, float new)
-{
-	for(int i = len - 1; i > 0; i--)
-	{
-		list[i] = list[i-1];
-	}
-	list[0] = new;
-}
-
-void drawScreen(float* list, int width, int height)
-{
-	int indexes[width];
-	int axes[5];
-	
-	for(int i = 0; i < 5; i++)
-		axes[i] = roundf((float) height - (float) height * (25.0*i)/100.0) - 1;
-	
-	for(int i = 0; i < width; i++)
-	{
-		indexes[i] = roundf((float) height - (float) height * list[i]/100.0) - 1;
-		
-		for(int j = indexes[i]; j < height; j++)
-		{
-			mvprintw(j, i, "*");
-		}
-		
-		for(int j = 1; j < 4; j++)
-		{
-			attron(COLOR_PAIR(1));
-			if(axes[j] != indexes[i])
-				mvaddch(axes[j], i, ACS_HLINE);
-			else
-				mvprintw(indexes[i], i, "*");
-			attroff(COLOR_PAIR(1));
-		}
-	}
-}
-
-int getNumCPUs()
-{
-	FILE* fp;
-	char* line = NULL;
-	size_t dum;
-	ssize_t err;
-	int count = 0;
-	
-	fp = fopen("/proc/stat", "r");
-	if(!fp)
-		return 0;
-	
-	while((err = getline(&line, &dum, fp)) != -1)
-	{
-		if(strncmp(line, "cpu", 3))
-		{
-			free(line);
-			break;
-		}
-		
-		if(line[3] >= '0' && line[3] <= '9')
-			count++;
-		
-		free(line);
-		line = NULL;
-	}
-	
-	fclose(fp);
-	
-	return count;
-}
-
-int strchrCount(char* s, char c)
-{
-	int i;
-	for (i = 0;
-			s[i];
-			s[i]==c ? i++ : (long) s++);
-	return i;
-}
-
-struct cpuTime parseLine(char* str, int len)
-{
-	char copy[len+1];
-	char** args;
-	int j = 1;
-	struct cpuTime out;
-	unsigned long long sum = 0;
-	int argc = strchrCount(str, ' ') + 1;
-	
-	args = malloc(sizeof(char*) * argc);
-	
-	args[0] = NULL;
-	
-	memcpy(copy, str, len+1);
-	for(int i = 0; i < len; i++)
-	{
-//		printf("%d: %d\n", i, j);
-		if(copy[i] < ' ')
-			copy[i] = '\0';
-		if(copy[i] == ' ')
-		{
-			if(args[j-1] < &copy[i])
-				args[j++] = &copy[i+1];
-			else
-				args[j-1]++;
-			copy[i] = '\0';
-		}
-	}
-	
-	out.user = atol(args[1]) + atol(args[2]);
-	out.sys = atol(args[3]);
-	for(int i = 1; i < j; i++)
-		sum += atol(args[i]);
-	out.total = sum;
-	
-	free(args);
-	
-	return out;
-}
-
-int readCPUs(int numCPUs, struct cpuTime* now)
-{
-	FILE* fp;
-	char* line = NULL;
-	size_t dum;
-	ssize_t len;
-	int i;
-	
-	fp = fopen("/proc/stat", "r");
-	if(!fp)
-		return 0;
-	
-	for(i = 0; i <  numCPUs + 1; i++)
-	{
-		if((len = getline(&line, &dum, fp)) != -1)
-		{
-			now[i] = parseLine(line, len);
-			free(line);
-			line = NULL;
-		}
-	}
-	
-	fclose(fp);
-	
-	return i;
-}
-
-int getCPUtime(struct cpuPercent* cpu, int numCPUs, struct cpuTime* first, struct cpuTime* second)
-{
-	struct timeval wait = {.tv_sec = 1, .tv_usec = 0};
-	fd_set set;
-	long numEvents;
-	
-	readCPUs(numCPUs, first);
-
-	// Zero out the set, then add 0 to the set to monitor stdin for keypresses.
-	FD_ZERO(&set);
-	FD_SET(0, &set);
-	// Wait 1 second. Or gather input.
-	select(1, &set, NULL, NULL, &wait);
-	
-	readCPUs(numCPUs, second);
-
-	// do math to calculate percentage
-	for(int i = 0; i < numCPUs + 1; i++)
-	{
-		numEvents = second[i].total - first[i].total;
-		if(numEvents == 0)
-			return 0;
-		
-		cpu[i].user = (float) (second[i].user - first[i].user) / (float) numEvents * 100.0;
-		cpu[i].sys = (float) (second[i].sys - first[i].sys) / (float) numEvents * 100.0;
-		cpu[i].total = cpu[i].user + cpu[i].sys;
-	}
-
 	return 0;
 }
