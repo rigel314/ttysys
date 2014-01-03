@@ -10,7 +10,7 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#define AppName "ttyload"
+#define AppName "ttysys"
 #define AppVers "0.1"
 
 #define ASCIIshiftBit 0x20

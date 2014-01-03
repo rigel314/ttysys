@@ -13,7 +13,7 @@ OBJECT_DIR = $(BUILD_DIR)/object
 
 # Objects
 objects = $(patsubst src/%.c,$(OBJECT_DIR)/%.o,$(wildcard src/*.c))
-out = ttyload
+out = ttysys
 
 # Make all of the build directories
 $(shell mkdir -p $(TARGET_DIR) 2> /dev/null)
@@ -23,9 +23,9 @@ $(shell mkdir -p $(OBJECT_DIR) 2> /dev/null)
 .PHONY : all clean install uninstall
 
 # Build all
-all : $(TARGET_DIR)/ttyload
+all : $(TARGET_DIR)/ttysys
 
-$(TARGET_DIR)/ttyload : $(objects)
+$(TARGET_DIR)/ttysys : $(objects)
 	$(LD) $(options) $(objects) -o $@
 
 # Compile source
@@ -38,8 +38,8 @@ clean :
 
 # Install the executables
 install : all
-	cp $(TARGET_DIR)/ttyload /usr/local/bin/
+	cp $(TARGET_DIR)/ttysys /usr/local/bin/
 
 # Uninstall the executables
 uninstall :
-	-rm /usr/local/bin/ttyload 2> /dev/null
+	-rm /usr/local/bin/ttysys 2> /dev/null
