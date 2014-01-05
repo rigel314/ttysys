@@ -19,7 +19,7 @@ void drawScreen(struct windowlist* win)
 	int width = win->dataLen;
 	
 	for(int i = 0; i < 5; i++)
-		axes[i] = roundf((float) height - (float) height * (25.0*i)/100.0) - 1;
+		axes[i] = roundf((float) height - (float) height * (25.0*i)/100.0);
 	
 	for(int i = 0; i < width; i++)
 	{
@@ -147,7 +147,7 @@ void resizeWindowToFrame(struct windowlist* win)
 		for(int i = 1; i < 4; i++)
 		{
 			int height = getContentFrame(win).size.height;
-			int row = roundf((float) height - (float) height * (25.0*i)/100.0) - 1;
+			int row = roundf((float) height - (float) height * (25.0*i)/100.0);
 			char str[4];
 			
 			sprintf(str, "%d%%", 25*i);
