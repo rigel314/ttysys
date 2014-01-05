@@ -15,6 +15,7 @@
 #include "windowlist.h"
 #include "cpuInfo.h"
 #include "memInfo.h"
+#include "common.h"
 
 WINDOW* borders;
 
@@ -28,7 +29,6 @@ int main(int argc, char** argv)
 	int numCPUs = getNumCPUs();
 	struct windowlist* wins = NULL;
 	struct windowlist* focus;
-	struct windowlist* ptr;
 	WINDOW* status;
 	
 	// creating structs
@@ -81,7 +81,7 @@ int main(int argc, char** argv)
 		{
 			case '?':
 				showHelp();
-				foreachLinkedListElem(struct windowlist*, ptr, wins)
+				LLforeach(struct windowlist*, ptr, wins)
 				{
 					touchwin(ptr->titlewin);
 					touchwin(ptr->labelwin);
@@ -126,7 +126,7 @@ int main(int argc, char** argv)
 			case 'c':
 				unSplit(&wins, &focus);
 				remapArrows(wins, wins);
-				foreachLinkedListElem(struct windowlist*, ptr, wins)
+				LLforeach(struct windowlist*, ptr, wins)
 				{
 					touchwin(ptr->titlewin);
 					touchwin(ptr->labelwin);
@@ -167,7 +167,7 @@ int main(int argc, char** argv)
 			}
 		}
 		
-		for(ptr = wins; ptr != NULL; ptr = ptr->next)
+		LLforeach(struct windowlist*, ptr, wins)
 			drawScreen(ptr);
 
 //		refresh();
@@ -178,7 +178,7 @@ int main(int argc, char** argv)
 		getMemInfo(mem);
 		if(getCPUtime(cpu, numCPUs, CPUthen, CPUnow) == 1)
 			continue;
-		for(ptr = wins; ptr != NULL; ptr = ptr->next)
+		LLforeach(struct windowlist*, ptr, wins)
 		{
 			if(ptr->dataType == CPUData)
 			{

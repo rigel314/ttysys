@@ -11,6 +11,7 @@
 #include <string.h>
 #include <limits.h>
 #include "windowlist.h"
+#include "common.h"
 
 void drawScreen(struct windowlist* win)
 {
@@ -53,7 +54,6 @@ void drawScreen(struct windowlist* win)
 
 void remapArrows(struct windowlist* wins, struct windowlist* win)
 {
-	struct windowlist* ptr;
 	struct bestPtr mins[4] = {{NULL, INT_MAX}, {NULL, INT_MAX}, {NULL, INT_MAX}, {NULL, INT_MAX}};
 	
 	if(!win)
@@ -61,8 +61,8 @@ void remapArrows(struct windowlist* wins, struct windowlist* win)
 	
 	win->surrounding = (struct arrowPointers){NULL, NULL, NULL, NULL};
 	
-	// Running in 2n^2 time won't be too bad when n has a small max.  You'd need a HUGE monitor to get more than a 3 digit max.  And even then, you probably wouldn't notice the crappy running time.
-	for(ptr = wins; ptr != NULL; ptr = ptr->next)
+	// Running in n^2 time won't be too bad when n has a small max.  You'd need a HUGE monitor to get more than a 3 digit max.  And even then, you probably wouldn't notice the crappy running time.
+	LLforeach(struct windowlist*, ptr, wins)
 	{
 		if(ptr->frame.origin.x + ptr->frame.size.width +1 == win->frame.origin.x && ptr->frame.origin.y <= win->frame.origin.y+win->frame.size.height && ptr->frame.origin.y+ptr->frame.size.height >= win->frame.origin.y)
 		{
@@ -251,7 +251,7 @@ void unSplit(struct windowlist** wins, struct windowlist** win)
 	struct windowlist** surrPtr;
 	struct windowlist* dirs[4] = {NULL, NULL, NULL, NULL};
 	int numDirs = 0;
-	int choice;
+	int choice = -1;
 	
 	if(!wins || !*wins || !win || !*win)
 		return;
@@ -343,9 +343,7 @@ void unSplit(struct windowlist** wins, struct windowlist** win)
 
 void refreshAll(struct windowlist* wins, struct windowlist* focus)
 {
-	struct windowlist* ptr;
-	
-	for(ptr = wins; ptr != NULL; ptr = ptr->next)
+	LLforeach(struct windowlist*, ptr, wins)
 	{
 		if(ptr->flags & wf_Title)
 		{
