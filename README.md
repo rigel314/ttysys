@@ -27,8 +27,10 @@ Running `make uninstall` will `rm /usr/local/bin/ttysys`.
 * `u` - Un-split current window.
 * Tab - Move to next window in order of creation.
 * Arrow Keys - Move to next window on screen in direction pressed.
-* Numbers `0` - `9` - Select a data source for a window.
-	* `0` will set the data source to an overview, and `1` - `9` set it to a specific core.
+* Numbers `0` - `9` and keys `m` and `s` - Select a data source for a window.
+	* `0` will set the data source to a CPU overview, and `1` - `9` set it to a specific core.
+	* `m` will set the data source to RAM usage.
+	* `s` will set the data source to Swap usage.
 * `g` - Toggle grid for selected window.
 * `e` - Toggle value display in current window's title.
 * `t` - Toggle display of current window's title bar.
