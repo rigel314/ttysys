@@ -20,7 +20,7 @@ void showHelp()
 							"  ?            This help.\n"
 							"  h            Split current window horizontally.\n"
 							"  v            Split current window vertically.\n"
-							"  u            Un-split current window.\n"
+							"  c            Close current window.\n"
 							"  Tab          Move to next window in order of creation.\n"
 							"  Arrow Keys   Move to next window on screen in direction pressed.\n"
 							"  Numbers 0-9  Set data source to CPU #. '0' means give a summary.\n"

@@ -23,10 +23,6 @@ struct windowlist
 	WINDOW* titlewin;
 	WINDOW* contentwin;
 	WINDOW* labelwin;
-	char title[25];
-	int flags;
-	enum winType type;
-	struct GRect frame;
 	struct arrowPointers
 	{
 		struct windowlist* left;
@@ -34,6 +30,10 @@ struct windowlist
 		struct windowlist* up;
 		struct windowlist* down;
 	} surrounding;
+	char title[25];
+	char flags;
+	enum winType type;
+	struct GRect frame;
 	enum winDataType dataType;
 	int dataSource;
 	float* data;

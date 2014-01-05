@@ -112,9 +112,17 @@ int main(int argc, char** argv)
 				splitV(focus);
 				remapArrows(wins, wins);
 				break;
-			case 'u':
+			case 'c':
 				unSplit(&wins, &focus);
 				remapArrows(wins, wins);
+				foreachLinkedListElem(struct windowlist*, ptr, wins)
+				{
+					touchwin(ptr->titlewin);
+					touchwin(ptr->labelwin);
+					touchwin(ptr->contentwin);
+				}
+				touchwin(borders);
+				touchwin(status);
 				break;
 				
 			case '\t':

@@ -217,35 +217,96 @@ void splitH(struct windowlist* old)
 void unSplit(struct windowlist** wins, struct windowlist** win)
 {
 	struct windowlist** surrPtr;
+	struct windowlist* dirs[4] = {NULL, NULL, NULL, NULL};
+	int numDirs = 0;
+	int choice;
 	
 	if(!wins || !*wins || !win || !*win)
 		return;
-	
 	for(surrPtr = &(*win)->surrounding.left; surrPtr <= &(*win)->surrounding.down; surrPtr++)
 	{
 		struct windowlist* ptr = *surrPtr;
+		
 		if(ptr)
-		{
-			if( (ptr->frame.size.height == (*win)->frame.size.height && abs(ptr->frame.size.width - (*win)->frame.size.width) <= 1) ||
-				(ptr->frame.size.width == (*win)->frame.size.width && abs(ptr->frame.size.height - (*win)->frame.size.height) <= 1))
+			if( (ptr->frame.size.height == (*win)->frame.size.height && ptr->frame.origin.y == (*win)->frame.origin.y) ||
+				(ptr->frame.size.width == (*win)->frame.size.width && ptr->frame.origin.x == (*win)->frame.origin.x))
 			{
-				if(surrPtr < &(*win)->surrounding.up)
-					ptr->frame = GRect(	min(ptr->frame.origin.x, (*win)->frame.origin.x),
-										min(ptr->frame.origin.y, (*win)->frame.origin.y),
-										ptr->frame.size.width + (*win)->frame.size.width + 1,
-										ptr->frame.size.height);
-				else
-					ptr->frame = GRect(	min(ptr->frame.origin.x, (*win)->frame.origin.x),
-										min(ptr->frame.origin.y, (*win)->frame.origin.y),
-										ptr->frame.size.width,
-										ptr->frame.size.height + (*win)->frame.size.height + 1);
-				resizeWindowToFrame(ptr);
-				freeWin(wins, *win);
-				*win = ptr;
+				int i = (surrPtr - &(*win)->surrounding.left);
+				dirs[i] = ptr;
+				numDirs++;
+				choice = i;
+			}
+	}
+	
+	if(numDirs == 0)
+		return;
+	
+	if(numDirs > 1)
+	{
+		// Display a window.
+		int c;
+		
+		WINDOW* bwin = newwin(6, 64, LINES / 2 - 3, COLS / 2 - 32);
+		WINDOW* hwin = newwin(4, 62, LINES / 2 - 3 + 1, COLS / 2 - 32 + 1);
+		
+		box(bwin, 0, 0);
+		mvwprintw(hwin, 0, 0,	"Ambiguous close direction.\n"
+								"Press an arrow key to indicate the window that should expand.\n"
+								"\n"
+								"Press Enter to cancel.");
+		
+		wrefresh(bwin);
+		wrefresh(hwin);
+		
+		choice = 4;
+		
+		while(choice > 3 || dirs[choice] == NULL)
+		{
+			c = getch();
+			
+			if(c == '\n')
+			{
+				choice = -1;
 				break;
 			}
+			
+			switch (c)
+			{
+				case KEY_LEFT:
+					choice = 0;
+					break;
+				case KEY_RIGHT:
+					choice = 1;
+					break;
+				case KEY_UP:
+					choice = 2;
+					break;
+				case KEY_DOWN:
+					choice = 3;
+					break;
+			}
 		}
+		
+		delwin(hwin);
+		delwin(bwin);
 	}
+	
+	if(choice == -1)
+		return;
+	
+	if(choice < 2)
+		dirs[choice]->frame = GRect(min(dirs[choice]->frame.origin.x, (*win)->frame.origin.x),
+									min(dirs[choice]->frame.origin.y, (*win)->frame.origin.y),
+									dirs[choice]->frame.size.width + (*win)->frame.size.width + 1,
+									dirs[choice]->frame.size.height);
+	else
+		dirs[choice]->frame = GRect(min(dirs[choice]->frame.origin.x, (*win)->frame.origin.x),
+									min(dirs[choice]->frame.origin.y, (*win)->frame.origin.y),
+									dirs[choice]->frame.size.width,
+									dirs[choice]->frame.size.height + (*win)->frame.size.height + 1);
+	resizeWindowToFrame(dirs[choice]);
+	freeWin(wins, *win);
+	*win = dirs[choice];
 }
 
 void refreshAll(struct windowlist* wins, struct windowlist* focus)
@@ -330,13 +391,13 @@ struct windowlist* addWin(struct windowlist** wins)
 	new->titlewin = newwin(0, 0, 0, 0);
 	new->contentwin = newwin(0, 0, 0, 0);
 	new->labelwin = newwin(0, 0, 0, 0);
-	new->title[0] = 0;
-	new->flags = wf_Title | wf_Label | wf_Grid | wf_ExpandedTitle | wf_Border;
-	new->type = PercentChart;
 	new->surrounding.left = NULL;
 	new->surrounding.right = NULL;
 	new->surrounding.up = NULL;
 	new->surrounding.down = NULL;
+	new->title[0] = 0;
+	new->flags = wf_Title | wf_Label | wf_Grid | wf_ExpandedTitle | wf_Border;
+	new->type = PercentChart;
 	new->frame = GRect(1, 1, COLS - 2, LINES - 3);
 	new->dataType = CPUData;
 	new->dataSource = 0;
