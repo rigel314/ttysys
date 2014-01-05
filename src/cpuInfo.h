@@ -23,7 +23,7 @@ struct cpuPercent
 };
 
 int getNumCPUs();
-struct cpuTime parseLine(char* str, int len);
+struct cpuTime parseCPUline(char* str, int len);
 int readCPUs(int numCPUs, struct cpuTime* now);
 int getCPUtime(struct cpuPercent* cpu, int numCPUs, struct cpuTime* first, struct cpuTime* second);
 

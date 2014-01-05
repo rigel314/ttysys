@@ -45,7 +45,7 @@ int getNumCPUs()
 	return count;
 }
 
-struct cpuTime parseLine(char* str, int len)
+struct cpuTime parseCPUline(char* str, int len)
 {
 	char copy[len+1];
 	char** args;
@@ -100,7 +100,7 @@ int readCPUs(int numCPUs, struct cpuTime* now)
 	{
 		if((len = getline(&line, &dum, fp)) != -1)
 		{
-			now[i] = parseLine(line, len);
+			now[i] = parseCPUline(line, len);
 			free(line);
 			line = NULL;
 		}
