@@ -8,6 +8,7 @@
  *		Comment this code.
  *		New input method. + New help window.
  *		Corners in the border.
+ *		Make arrow keys default to left most and top most when there are multiple cases. 
  */
 
 #include <ncurses.h>
