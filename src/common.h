@@ -11,7 +11,7 @@
 #define COMMON_H_
 
 #define AppName "ttysys"
-#define AppVers "0.5"
+#define AppVers "0.7"
 
 #define ASCIIshiftBit 0x20
 
