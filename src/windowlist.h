@@ -40,6 +40,12 @@ struct windowlist
 	int dataLen;
 };
 
+struct bestPtr
+{
+	struct windowlist* ptr;
+	int diff;
+};
+
 void drawScreen(struct windowlist* win);
 void remapArrows(struct windowlist* wins, struct windowlist* win);
 struct GRect getContentFrame(struct windowlist* win);
