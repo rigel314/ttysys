@@ -59,6 +59,19 @@ void remapArrows(struct windowlist* wins, struct windowlist* win)
 	
 	win->surrounding = (struct arrowPointers){NULL, NULL, NULL, NULL};
 	
+	// Running in 2n^2 time won't be too bad when n has a small max.  You'd need a HUGE monitor to get more than a 3 digit max.  And even then, you probably wouldn't notice the crappy running time.
+	for(ptr = wins; ptr != NULL; ptr = ptr->next)
+	{
+		if(ptr->frame.origin.x == win->frame.origin.x + win->frame.size.width + 1)
+			win->surrounding.right = ptr;
+		if(ptr->frame.origin.x + ptr->frame.size.width +1 == win->frame.origin.x)
+			win->surrounding.left = ptr;
+		if(ptr->frame.origin.y == win->frame.origin.y + win->frame.size.height + 1)
+			win->surrounding.down = ptr;
+		if(ptr->frame.origin.y + ptr->frame.size.height +1 == win->frame.origin.y)
+			win->surrounding.up = ptr;
+	}
+
 	for(ptr = wins; ptr != NULL; ptr = ptr->next)
 	{
 		if(ptr->frame.origin.y == win->frame.origin.y && ptr->frame.origin.x == win->frame.origin.x + win->frame.size.width + 1)

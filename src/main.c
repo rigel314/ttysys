@@ -8,7 +8,6 @@
  *		Comment this code.
  *		Memory + Swap.
  *		New input method. + New help window.
- *		More reasonable arrow keys.
  *		Corners in the border.
  */
 
