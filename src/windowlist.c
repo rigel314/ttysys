@@ -340,17 +340,25 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 					strcat(ptr->title, "Summary");
 				else
 					sprintf(ptr->title + 4, "%d", ptr->dataSource);
-				
-				if(ptr->flags & wf_ExpandedTitle)
-				{
-					strcat(ptr->title, " - ");
-					sprintf(ptr->title + strlen(ptr->title), "%.2f%%", ptr->data[ptr->dataLen-1]);
-				}
-	
-				for(int i = strlen(ptr->title); i < 23; i++)
-					ptr->title[i] = ' ';
-				ptr->title[24] = '\0';
 			}
+			else if(ptr->dataType == MemData)
+			{
+				if(ptr->dataSource == 0)
+					strcpy(ptr->title, "RAM");
+				else
+					strcpy(ptr->title, "Swap");
+			}
+			
+			if(ptr->flags & wf_ExpandedTitle)
+			{
+				strcat(ptr->title, " - ");
+				sprintf(ptr->title + strlen(ptr->title), "%.2f%%", ptr->data[ptr->dataLen-1]);
+			}
+			
+			for(int i = strlen(ptr->title); i < 23; i++)
+				ptr->title[i] = ' ';
+			ptr->title[24] = '\0';
+			
 			mvwaddstr(ptr->titlewin, 0, 3, ptr->title);
 			
 			if(ptr == focus)

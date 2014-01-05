@@ -15,15 +15,17 @@
 #include <stdlib.h>
 #include "windowlist.h"
 #include "cpuInfo.h"
+#include "memInfo.h"
 
 WINDOW* borders;
 
 int main(int argc, char** argv)
 {
 	int c;
-	struct cpuTime* then;
-	struct cpuTime* now;
+	struct cpuTime* CPUthen;
+	struct cpuTime* CPUnow;
 	struct cpuPercent* cpu;
+	struct memPercent* mem;
 	int numCPUs = getNumCPUs();
 	struct windowlist* wins = NULL;
 	struct windowlist* focus;
@@ -31,9 +33,10 @@ int main(int argc, char** argv)
 	WINDOW* status;
 	
 	// creating structs
-	then = malloc(sizeof(struct cpuTime) * (numCPUs+1));
-	now = malloc(sizeof(struct cpuTime) * (numCPUs+1));
+	CPUthen = malloc(sizeof(struct cpuTime) * (numCPUs+1));
+	CPUnow = malloc(sizeof(struct cpuTime) * (numCPUs+1));
 	cpu = malloc(sizeof(struct cpuPercent) * (numCPUs+1));
+	mem = malloc(sizeof(struct memPercent));
 	
 	// ncurses init stuff
 	initscr();
@@ -102,7 +105,17 @@ int main(int argc, char** argv)
 				focus->flags ^= wf_Label;
 				resizeWindowToFrame(focus);
 				break;
-				
+			
+			case 'm':
+				focus->dataType = MemData;
+				focus->dataSource = 0;
+				break;
+			
+			case 's':
+				focus->dataType = MemData;
+				focus->dataSource = 1;
+				break;
+			
 			case 'h':
 				splitH(focus);
 				remapArrows(wins, wins);
@@ -149,7 +162,10 @@ int main(int argc, char** argv)
 		if(c >= '0' && c <= '9')
 		{
 			if(c - '0' < numCPUs + 1)
+			{
+				focus->dataType = CPUData;
 				focus->dataSource = c - '0';
+			}
 		}
 		
 		for(ptr = wins; ptr != NULL; ptr = ptr->next)
@@ -160,10 +176,23 @@ int main(int argc, char** argv)
 		wrefresh(status);
 		refreshAll(wins, focus);
 		
-		if(getCPUtime(cpu, numCPUs, then, now) == 1)
+		getMemInfo(mem);
+		if(getCPUtime(cpu, numCPUs, CPUthen, CPUnow) == 1)
 			continue;
 		for(ptr = wins; ptr != NULL; ptr = ptr->next)
-			listShiftLeftAdd(ptr->data, ptr->dataLen, cpu[ptr->dataSource].total);
+		{
+			if(ptr->dataType == CPUData)
+			{
+				listShiftLeftAdd(ptr->data, ptr->dataLen, cpu[ptr->dataSource].total);
+			}
+			else if(ptr->dataType == MemData)
+			{
+				if(ptr->dataSource == 0)
+					listShiftLeftAdd(ptr->data, ptr->dataLen, mem->ram);
+				else
+					listShiftLeftAdd(ptr->data, ptr->dataLen, mem->swap);
+			}
+		}
 	}
 	
 	endwin();
