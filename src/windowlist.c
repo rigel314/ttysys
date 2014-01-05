@@ -62,16 +62,17 @@ void remapArrows(struct windowlist* wins, struct windowlist* win)
 	// Running in 2n^2 time won't be too bad when n has a small max.  You'd need a HUGE monitor to get more than a 3 digit max.  And even then, you probably wouldn't notice the crappy running time.
 	for(ptr = wins; ptr != NULL; ptr = ptr->next)
 	{
-		if(ptr->frame.origin.x == win->frame.origin.x + win->frame.size.width + 1)
+		if(ptr->frame.origin.x == win->frame.origin.x + win->frame.size.width + 1 && ptr->frame.origin.y <= win->frame.origin.y+win->frame.size.height && ptr->frame.origin.y+ptr->frame.size.height >= win->frame.origin.y)
 			win->surrounding.right = ptr;
-		if(ptr->frame.origin.x + ptr->frame.size.width +1 == win->frame.origin.x)
+		if(ptr->frame.origin.x + ptr->frame.size.width +1 == win->frame.origin.x && ptr->frame.origin.y <= win->frame.origin.y+win->frame.size.height && ptr->frame.origin.y+ptr->frame.size.height >= win->frame.origin.y)
 			win->surrounding.left = ptr;
-		if(ptr->frame.origin.y == win->frame.origin.y + win->frame.size.height + 1)
+		if(ptr->frame.origin.y == win->frame.origin.y + win->frame.size.height + 1 && ptr->frame.origin.x <= win->frame.origin.x+win->frame.size.width && ptr->frame.origin.x+ptr->frame.size.width >= win->frame.origin.x)
 			win->surrounding.down = ptr;
-		if(ptr->frame.origin.y + ptr->frame.size.height +1 == win->frame.origin.y)
+		if(ptr->frame.origin.y + ptr->frame.size.height +1 == win->frame.origin.y && ptr->frame.origin.x <= win->frame.origin.x+win->frame.size.width && ptr->frame.origin.x+ptr->frame.size.width >= win->frame.origin.x)
 			win->surrounding.up = ptr;
 	}
 
+	// most strict alignment wins.
 	for(ptr = wins; ptr != NULL; ptr = ptr->next)
 	{
 		if(ptr->frame.origin.y == win->frame.origin.y && ptr->frame.origin.x == win->frame.origin.x + win->frame.size.width + 1)

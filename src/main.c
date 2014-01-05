@@ -6,7 +6,6 @@
  *
  *	TODO:
  *		Comment this code.
- *		Memory + Swap.
  *		New input method. + New help window.
  *		Corners in the border.
  */
