@@ -10,21 +10,36 @@
 #include <string.h>
 #include "memInfo.h"
 
+/**
+ * long parseMemLine(char* str, int len)
+ * 	str is a line from /proc/meminfo.
+ * 	len is the lengh of str.
+ * finds a number and uses atol() to get it's value.
+ * ignores unit, assumes kiB.
+ * returns value of meminfo entry.
+ */
 long parseMemLine(char* str, int len)
 {
 	int i, j;
 	char copy[len+1];
 	
+	// make local copy for monkeying.
 	memcpy(copy, str, len);
 	copy[len] = '\0';
 	
-	for(i = 0; i < len && !(copy[i] >= '0' && copy[i] <= '9'); i++);
-	for(j = i; j < len && copy[j] >= '0' && copy[j] <= '9'; j++);
-	copy[j] = '\0';
+	for(i = 0; i < len && !(copy[i] >= '0' && copy[i] <= '9'); i++); // i is the beginning of the number.
+	for(j = i; j < len && copy[j] >= '0' && copy[j] <= '9'; j++); // j is right after the end of the number.
+	copy[j] = '\0'; // NULL terminate at end of number.
 	
-	return atol(copy + i);
+	return atol(copy + i); // Give atol() a string that starts at copy+i.
 }
 
+/**
+ * struct memNow readMem()
+ * Reads /proc/meminfo and looks for specific lines relating to RAM and Swap.
+ * Parses them with parseMemLine().
+ * returns struct memNow containing values from /proc/meminfo.
+ */
 struct memNow readMem()
 {
 	struct memNow now = {0, 0, 0, 0, 0, 0};
@@ -39,7 +54,7 @@ struct memNow readMem()
 		return now;
 	
 	while(count < 6 && (len = getline(&line, &dum, fp)) != -1)
-	{
+	{ // Get a line and parse it if it is one of these lines:
 		if(!strncmp(line, "MemTotal:", 9))
 		{
 			count++;
@@ -71,8 +86,8 @@ struct memNow readMem()
 			now.swapFree = parseMemLine(line, len);
 		}
 		
-		free(line);
-		line = NULL;
+		free(line); // Important!
+		line = NULL; // Also important.  See man 3 getline.
 	}
 	
 	fclose(fp);
@@ -80,10 +95,17 @@ struct memNow readMem()
 	return now;
 }
 
+/**
+ * void getMemInfo(struct memPercent* mem)
+ * 	mem is the output that should end up with percentages
+ * Calls readMem() and calculates percentages.
+ */
 void getMemInfo(struct memPercent* mem)
 {
+	// Read meminfo.
 	struct memNow now = readMem();
 	
+	// Do math to calculate percentage.
 	if(now.ramTotal == 0)
 		mem->ram = 0;
 	else

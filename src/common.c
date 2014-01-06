@@ -8,13 +8,18 @@
 #include <ncurses.h>
 #include "common.h"
 
+/**
+ * void showHelp()
+ * Presents a window showing a help screen.
+ */
 void showHelp()
 {
 	int c;
+	// Make frames.
 	WINDOW* bwin = newwin(20, 70, LINES / 2 - 10, COLS / 2 - 35);
 	WINDOW* hwin = newwin(18, 68, LINES / 2 - 10 + 1, COLS / 2 - 35 + 1);
 	
-	box(bwin, 0, 0);
+	box(bwin, 0, 0); // Print border.
 	mvwprintw(hwin, 0, 0, 	"%s v%s\n"
 							"Lots of keys do things:\n"
 							"  ?            This help.\n"
@@ -35,12 +40,12 @@ void showHelp()
 							"Press Enter to dismiss this help.",
 							AppName, AppVers);
 	
-	wrefresh(bwin);
+	wrefresh(bwin); // Actually write to screen.
 	wrefresh(hwin);
 	
 	while((c = getch()))
-	{
-		if(c == 10)
+	{ // Wait for enter.
+		if(c == '\n')
 			break;
 	}
 	
@@ -48,30 +53,47 @@ void showHelp()
 	delwin(bwin);
 }
 
+/**
+ * int strchrCount(char* s, char c)
+ * 	s is a string.
+ * 	c is a character to look for.
+ * returns number of occurrences of c in s.
+ */
 int strchrCount(char* s, char c)
 {
 	int i;
-	for (i = 0;
-			s[i];
-			s[i]==c ? i++ : (long) s++);
+	for (i = 0; s[i]; (s[i] == c) ? (void) i++ : (void) s++); // always increment s or i.  Casts to void to avoid warnings.
 	return i;
 }
 
-
+/**
+ * void listShiftLeftAdd(float* list, int len, float new)
+ * 	list is the list to be shifted.
+ * 	len is the length of the list.
+ * 	new is a new value to be added.
+ * shifts list towards beginning and adds new at end.
+ */
 void listShiftLeftAdd(float* list, int len, float new)
 {
 	for(int i = 0; i < len-1; i++)
 	{
-		list[i] = list[i+1];
+		list[i] = list[i+1]; // shift
 	}
-	list[len-1] = new;
+	list[len-1] = new; // add
 }
 
+/**
+ * void listShiftRightAdd(float* list, int len, float new)
+ * 	list is the list to be shifted.
+ * 	len is the length of the list.
+ * 	new is a new value to be added.
+ * shifts list towards end and adds new at beginning.
+ */
 void listShiftRightAdd(float* list, int len, float new)
 {
 	for(int i = len - 1; i > 0; i--)
 	{
-		list[i] = list[i-1];
+		list[i] = list[i-1]; // shift
 	}
-	list[0] = new;
+	list[0] = new; // add
 }

@@ -8,6 +8,7 @@
 #ifndef MEMINFO_H_
 #define MEMINFO_H_
 
+// Holds numbers from /proc/meminfo in kiB.
 struct memNow
 {
 	long ramTotal;
@@ -18,6 +19,7 @@ struct memNow
 	long swapFree;
 };
 
+// Holds percentages for RAM and Swap.
 struct memPercent
 {
 	float ram;

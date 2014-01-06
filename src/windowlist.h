@@ -11,12 +11,15 @@
 #include "common.h"
 #include <ncurses.h>
 
+// window information.
 enum winFlags { wf_Title = 1, wf_Label = 1<<1, wf_Grid = 1<<2, wf_ExpandedTitle = 1<<3, wf_Border = 1<<4 };
 enum winType { PercentChart };
 enum winDataType { CPUData, MemData, NetData };
 
+// printLine information.
 enum lineDir { HORIZ, VERT };
 
+// My window management structure.
 struct windowlist
 {
 	struct windowlist* next;
@@ -40,6 +43,7 @@ struct windowlist
 	int dataLen;
 };
 
+// Used in determining arrow key mapping.
 struct bestPtr
 {
 	struct windowlist* ptr;
