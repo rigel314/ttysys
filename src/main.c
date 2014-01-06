@@ -7,6 +7,7 @@
  *	TODO:
  *		New input method. + New help window.
  *		Corners in the border.
+ *		Resizeability.
  */
 
 #include <ncurses.h>
