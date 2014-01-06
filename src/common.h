@@ -10,15 +10,21 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
+// Program Information.
 #define AppName "ttysys"
-#define AppVers "0.5"
+#define AppVers "0.7"
 
+// ASCII shiftBit for ignoring case.
 #define ASCIIshiftBit 0x20
 
+// Usual min and max macros.
 #define min(x, y) ((x)<(y)?(x):(y))
 #define max(x, y) ((x)>(y)?(x):(y))
-#define foreachLinkedListElem(type, ptr, list) for(type ptr = list; ptr != NULL; ptr = ptr->next)
 
+// Macro for iterating through any linked list.
+#define LLforeach(type, ptr, list) for(type ptr = list; ptr != NULL; ptr = ptr->next)
+
+// Frame structures.
 struct GPoint
 {
 	int x;
@@ -34,13 +40,16 @@ struct GRect
 	struct GPoint origin;
 	struct GSize size;
 };
+// Helper macro for creating a GRect in one line.
 #define GRect(x, y, w, h) ((struct GRect){{(x), (y)}, {(w), (h)}})
 
 void showHelp();
+char* getDirectionString(int num);
 int strchrCount(char* s, char c);
 void listShiftLeftAdd(float* list, int len, float new);
 void listShiftRightAdd(float* list, int len, float new);
 
+// Global variable for WINDOW* to draw borders on.
 extern WINDOW* borders;
 
 #endif /* COMMON_H_ */

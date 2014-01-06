@@ -8,6 +8,7 @@
 #ifndef CPUINFO_H_
 #define CPUINFO_H_
 
+// Holds CPU time in different CPU modes.
 struct cpuTime
 {
 	unsigned long long total;
@@ -15,6 +16,7 @@ struct cpuTime
 	long sys;
 };
 
+// Holds percentages for a CPU.
 struct cpuPercent
 {
 	float total;
@@ -23,7 +25,7 @@ struct cpuPercent
 };
 
 int getNumCPUs();
-struct cpuTime parseLine(char* str, int len);
+struct cpuTime parseCPUline(char* str, int len);
 int readCPUs(int numCPUs, struct cpuTime* now);
 int getCPUtime(struct cpuPercent* cpu, int numCPUs, struct cpuTime* first, struct cpuTime* second);
 
