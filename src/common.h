@@ -44,6 +44,7 @@ struct GRect
 #define GRect(x, y, w, h) ((struct GRect){{(x), (y)}, {(w), (h)}})
 
 void showHelp();
+char* getDirectionString(int num);
 int strchrCount(char* s, char c);
 void listShiftLeftAdd(float* list, int len, float new);
 void listShiftRightAdd(float* list, int len, float new);

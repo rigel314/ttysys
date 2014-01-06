@@ -349,15 +349,23 @@ void unSplit(struct windowlist** wins, struct windowlist** win)
 	if(numDirs > 1)
 	{
 		int c;
+		char str[(5+numDirs+2) * 62];
+		
 		// Make frames.
-		WINDOW* bwin = newwin(6, 64, LINES / 2 - 3, COLS / 2 - 32);
-		WINDOW* hwin = newwin(4, 62, LINES / 2 - 3 + 1, COLS / 2 - 32 + 1);
+		WINDOW* bwin = newwin(5+numDirs+2, 64, LINES / 2 - (5+numDirs+2)/2, COLS / 2 - 32);
+		WINDOW* hwin = newwin(5+numDirs, 62, LINES / 2 - (5+numDirs+2)/2 + 1, COLS / 2 - 32 + 1);
+		
+		strcpy(str, "Selected window will close. Which window should expand?\n"
+					"\n"
+					"Press an arrow key to indicate the window that should expand.\n");
+		for(int i = 0; i < 4; i++)
+			if(dirs[i])
+				sprintf(str + strlen(str), "  %s: %s\n", getDirectionString(i), dirs[i]->title);
+		strcat(str, "\n"
+					"Press Enter to cancel.");
 		
 		box(bwin, 0, 0); // Draw a border frame.
-		mvwprintw(hwin, 0, 0,	"Ambiguous close direction.\n"
-								"Press an arrow key to indicate the window that should expand.\n"
-								"\n"
-								"Press Enter to cancel.");
+		mvwaddstr(hwin, 0, 0,str);
 		
 		// refresh WINDOW*s.
 		wrefresh(bwin);

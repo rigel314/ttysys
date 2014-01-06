@@ -54,6 +54,28 @@ void showHelp()
 }
 
 /**
+ * char* getDirectionString(int num)
+ * 	num is a number that represents an offset from the surrounding member of a windowlist struct, in sizeof(struct windowlist*) multiples
+ * Helps polish the UI.
+ */
+char* getDirectionString(int num)
+{
+	switch(num)
+	{
+		case 0:
+			return "Left";
+		case 1:
+			return "Right";
+		case 2:
+			return "Up";
+		case 3:
+			return "Down";
+		default:
+			return "";
+	}
+}
+
+/**
  * int strchrCount(char* s, char c)
  * 	s is a string.
  * 	c is a character to look for.

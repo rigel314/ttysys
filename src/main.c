@@ -5,7 +5,6 @@
  *      Author: cody
  *
  *	TODO:
- *		Comment this code.
  *		New input method. + New help window.
  *		Corners in the border.
  */
