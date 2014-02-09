@@ -12,6 +12,7 @@
 
 #include <ncurses.h>
 #include <stdlib.h>
+#include <string.h>
 #include "windowlist.h"
 #include "cpuInfo.h"
 #include "memInfo.h"
@@ -31,6 +32,8 @@ int main(int argc, char** argv)
 	struct windowlist* wins = NULL;
 	struct windowlist* focus;
 	WINDOW* status;
+	int argLen = 0;
+	int argCtr = 0;
 	
 	// creating structs
 	CPUthen = malloc(sizeof(struct cpuTime) * (numCPUs+1));
@@ -73,8 +76,17 @@ int main(int argc, char** argv)
 	waddstr(status, "'?' for help");
 	wattroff(status, COLOR_PAIR(4));
 	
+	if(argc == 2)
+	{
+		argLen = strlen(argv[1]);
+		ungetch(argv[1][argCtr++]);
+	}
+	
 	while((c = getch()))
 	{
+		if(argCtr < argLen)
+			ungetch(argv[1][argCtr]);
+			
 		if((c | ASCIIshiftBit) == 'q') // Q or q can quit
 			break; // Do this outside the switch so the break will actually break.
 		
@@ -101,8 +113,8 @@ int main(int argc, char** argv)
 				focus->flags ^= wf_Title; // Toggle title
 				resizeWindowToFrame(focus);
 				break;
-			case 'l':
-				focus->flags ^= wf_Label; // Toggle label
+			case 'o':
+				focus->flags ^= wf_Label; // Toggle ordinate label
 				resizeWindowToFrame(focus);
 				break;
 			
@@ -136,24 +148,28 @@ int main(int argc, char** argv)
 				touchwin(borders);
 				touchwin(status);
 				break;
-				
+			
 			case '\t':
 				focus = focus->next;
 				if(focus == NULL)
 					focus = wins;
 				break;
+			case 'r':
 			case KEY_RIGHT:
 				if(focus->surrounding.right != NULL)
 					focus = focus->surrounding.right;
 				break;
+			case 'l':
 			case KEY_LEFT:
 				if(focus->surrounding.left != NULL)
 					focus = focus->surrounding.left;
 				break;
+			case 'u':
 			case KEY_UP:
 				if(focus->surrounding.up != NULL)
 					focus = focus->surrounding.up;
 				break;
+			case 'd':
 			case KEY_DOWN:
 				if(focus->surrounding.down != NULL)
 					focus = focus->surrounding.down;
@@ -175,6 +191,12 @@ int main(int argc, char** argv)
 		wrefresh(borders);
 		wrefresh(status);
 		refreshAll(wins, focus); // Draw each window's title and write it to the screen.
+		
+		if(argCtr <= argLen)
+		{
+			argCtr++;
+			continue;
+		}
 		
 		// Get all the system info.
 		getMemInfo(mem);

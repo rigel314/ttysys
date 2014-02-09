@@ -386,15 +386,19 @@ void unSplit(struct windowlist** wins, struct windowlist** win)
 			
 			switch (c)
 			{
+				case 'l':
 				case KEY_LEFT:
 					choice = 0;
 					break;
+				case 'r':
 				case KEY_RIGHT:
 					choice = 1;
 					break;
+				case 'u':
 				case KEY_UP:
 					choice = 2;
 					break;
+				case 'd':
 				case KEY_DOWN:
 					choice = 3;
 					break;
