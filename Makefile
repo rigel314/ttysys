@@ -26,7 +26,7 @@ $(shell mkdir -p $(OBJECT_DIR) 2> /dev/null)
 all : $(TARGET_DIR)/ttysys
 
 $(TARGET_DIR)/ttysys : $(objects)
-	$(LD) $(options) $(objects) -o $@
+	$(LD) $(objects) -o $@  $(options)
 
 # Compile source
 $(OBJECT_DIR)/%.o : src/%.c
