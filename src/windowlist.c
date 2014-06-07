@@ -35,12 +35,12 @@ void drawScreen(struct windowlist* win)
 		// Calculate the row for each data point.
 		indexes[i] = roundf((float) height - (float) height * win->data[i]/100.0);
 		
-		// Print either a space or an asterisk in each row.
+		// Print either a space or an ACS_PLUS in each row.
 		// Only the differences will be actually be printed when the refresh() occurs.
 		for(int j = 0; j < height; j++)
 		{
 			if(j >= indexes[i])
-				mvwaddch(win->contentwin, j, i, '*');
+				mvwaddch(win->contentwin, j, i, ACS_PLUS);
 			else
 				mvwaddch(win->contentwin, j, i, ' ');
 		}
@@ -50,10 +50,10 @@ void drawScreen(struct windowlist* win)
 			for(int j = 1; j < 4; j++) // 1-4 instead of 0-5 because we don't care about 0% and 100%.
 			{
 				wattron(win->contentwin, COLOR_PAIR(1));
-				if(axes[j] != indexes[i])
+				if(axes[j] < indexes[i])
 					mvwaddch(win->contentwin, axes[j], i, ACS_HLINE); // Draw a line.
 				else
-					mvwaddch(win->contentwin, indexes[i], i, '*'); // We still want to see a point if was on a grid line.
+					mvwaddch(win->contentwin, axes[j], i, ACS_PLUS); // We still want to see a point if was on a grid line.
 				wattroff(win->contentwin, COLOR_PAIR(1));
 			}
 		}
