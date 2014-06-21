@@ -467,12 +467,29 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 			{
 				strcat(ptr->title, " - ");
 				sprintf(ptr->title + strlen(ptr->title), "%.2f%%", ptr->data[ptr->dataLen-1]); // "CPU Summary - 17.26%"
+				
+				if((ptr->flags & wf_ShowMax) && ptr->dataType == MemData)
+				{
+					int expon=3;
+					float x = ptr->maxVal;
+					
+					// Divide by multiples of 2^10 until we have a resonable number.
+					// If it's an unreasonable number of GB, this program will not display correctly.
+					while(x / 1024.0 > 1 && expon < 9)
+					{
+						x /= 1024.0;
+						expon += 3;
+					}
+					// I used an interpolation function to map 3 -> K, 6 -> M, and 9 -> G.
+					snprintf(ptr->title + strlen(ptr->title), 39-strlen(ptr->title), " of %.2f %ciB", x, 'A' + (-4*expon*expon/9+14*expon/3));
+					// "RAM - 17.26% of 3.86 GiB"
+				}
 			}
 			
 			// Pad the rest of title with spaces to be written over anything that got shorter.
-			for(int i = strlen(ptr->title); i < 23; i++)
+			for(int i = strlen(ptr->title); i < 39; i++)
 				ptr->title[i] = ' ';
-			ptr->title[24] = '\0'; // Null terminate title.
+			ptr->title[39] = '\0'; // Null terminate title.
 			
 			// Actually print title. (not actually, just schedule it for the next refresh() call.)
 			mvwaddstr(ptr->titlewin, 0, 3, ptr->title);
@@ -552,13 +569,14 @@ struct windowlist* addWin(struct windowlist** wins)
 	new->surrounding.up = NULL;
 	new->surrounding.down = NULL;
 	new->title[0] = 0;
-	new->flags = wf_Title | wf_Label | wf_Grid | wf_ExpandedTitle | wf_Border;
+	new->flags = wf_Title | wf_Label | wf_Grid | wf_ExpandedTitle | wf_ShowMax | wf_Border;
 	new->type = PercentChart;
 	new->frame = GRect(1, 1, COLS - 2, LINES - 3);
 	new->dataType = CPUData;
 	new->dataSource = 0;
 	new->data = NULL;
 	new->dataLen = 0;
+	new->maxVal = 0;
 	
 	if(!*wins)
 	{

@@ -22,6 +22,7 @@ struct memNow
 // Holds percentages for RAM and Swap.
 struct memPercent
 {
+	struct memNow now;
 	float ram;
 	float swap;
 };

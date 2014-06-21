@@ -213,9 +213,15 @@ int main(int argc, char** argv)
 			else if(ptr->dataType == MemData)
 			{
 				if(ptr->dataSource == 0)
+				{
 					listShiftLeftAdd(ptr->data, ptr->dataLen, mem->ram);
+					ptr->maxVal = mem->now.ramTotal;
+				}
 				else
+				{
 					listShiftLeftAdd(ptr->data, ptr->dataLen, mem->swap);
+					ptr->maxVal = mem->now.swapTotal;
+				}
 			}
 		}
 	}

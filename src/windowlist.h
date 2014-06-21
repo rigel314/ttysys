@@ -12,7 +12,7 @@
 #include <ncurses.h>
 
 // window information.
-enum winFlags { wf_Title = 1, wf_Label = 1<<1, wf_Grid = 1<<2, wf_ExpandedTitle = 1<<3, wf_Border = 1<<4 };
+enum winFlags { wf_Title = 1, wf_Label = 1<<1, wf_Grid = 1<<2, wf_ExpandedTitle = 1<<3, wf_ShowMax, wf_Border = 1<<5 };
 enum winType { PercentChart };
 enum winDataType { CPUData, MemData, NetData };
 
@@ -33,7 +33,7 @@ struct windowlist
 		struct windowlist* up;
 		struct windowlist* down;
 	} surrounding;
-	char title[25];
+	char title[40];
 	char flags;
 	enum winType type;
 	struct GRect frame;
@@ -41,6 +41,7 @@ struct windowlist
 	int dataSource;
 	float* data;
 	int dataLen;
+	float maxVal;
 };
 
 // Used in determining arrow key mapping.
