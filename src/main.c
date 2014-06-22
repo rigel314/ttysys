@@ -185,18 +185,18 @@ int main(int argc, char** argv)
 			}
 		}
 		
-		LLforeach(struct windowlist*, ptr, wins)
-			drawScreen(ptr); // Draw each window's content.
-
-		wrefresh(borders);
-		wrefresh(status);
-		refreshAll(wins, focus); // Draw each window's title and write it to the screen.
-		
 		if(argCtr <= argLen)
 		{
 			argCtr++;
 			continue;
 		}
+
+		LLforeach(struct windowlist*, ptr, wins)
+			drawScreen(ptr); // Draw each window's content.
+		
+		wrefresh(borders);
+		wrefresh(status);
+		refreshAll(wins, focus); // Draw each window's title and write it to the screen.
 		
 		// Get all the system info.
 		getMemInfo(mem);
