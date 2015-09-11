@@ -6,7 +6,7 @@ ttysys is a live ncurses cpu usage graph.
 The graph's units are in percentage.
 It updates once every second.
 ###Screenshot:
-<a href="https://raw.github.com/rigel314/ttysys/30eaa2f42746670677e24b3ca842014d9a17ece7/images/ttysys.png">![ttysys example](https://raw.github.com/rigel314/ttysys/30eaa2f42746670677e24b3ca842014d9a17ece7/images/ttysysSmall.png)</a>
+<a href="https://raw.github.com/rigel314/ttysys/26abbe0964db8f627d064974d4958542c10edd65/images/ttysys.png">![ttysys example](https://raw.github.com/rigel314/ttysys/26abbe0964db8f627d064974d4958542c10edd65/images/ttysysSmall.png)</a>
 
 ##Build:
 	> make all
