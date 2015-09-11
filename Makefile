@@ -4,7 +4,7 @@ LD = gcc
 
 #Flags
 options = -lncurses -lm
-flags = -O2 --std=gnu11 -Wall
+flags = -O2 --std=gnu99 -Wall
 
 # Build directories
 BUILD_DIR = build
