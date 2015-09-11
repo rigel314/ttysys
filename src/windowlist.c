@@ -35,12 +35,12 @@ void drawScreen(struct windowlist* win)
 		// Calculate the row for each data point.
 		indexes[i] = roundf((float) height - (float) height * win->data[i]/100.0);
 		
-		// Print either a space or an asterisk in each row.
+		// Print either a space or an ACS_PLUS in each row.
 		// Only the differences will be actually be printed when the refresh() occurs.
 		for(int j = 0; j < height; j++)
 		{
 			if(j >= indexes[i])
-				mvwaddch(win->contentwin, j, i, '*');
+				mvwaddch(win->contentwin, j, i, ACS_PLUS);
 			else
 				mvwaddch(win->contentwin, j, i, ' ');
 		}
@@ -50,10 +50,10 @@ void drawScreen(struct windowlist* win)
 			for(int j = 1; j < 4; j++) // 1-4 instead of 0-5 because we don't care about 0% and 100%.
 			{
 				wattron(win->contentwin, COLOR_PAIR(1));
-				if(axes[j] != indexes[i])
+				if(axes[j] < indexes[i])
 					mvwaddch(win->contentwin, axes[j], i, ACS_HLINE); // Draw a line.
 				else
-					mvwaddch(win->contentwin, indexes[i], i, '*'); // We still want to see a point if was on a grid line.
+					mvwaddch(win->contentwin, axes[j], i, ACS_PLUS); // We still want to see a point if was on a grid line.
 				wattroff(win->contentwin, COLOR_PAIR(1));
 			}
 		}
@@ -386,15 +386,19 @@ void unSplit(struct windowlist** wins, struct windowlist** win)
 			
 			switch (c)
 			{
+				case 'l':
 				case KEY_LEFT:
 					choice = 0;
 					break;
+				case 'r':
 				case KEY_RIGHT:
 					choice = 1;
 					break;
+				case 'u':
 				case KEY_UP:
 					choice = 2;
 					break;
+				case 'd':
 				case KEY_DOWN:
 					choice = 3;
 					break;
@@ -463,12 +467,29 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 			{
 				strcat(ptr->title, " - ");
 				sprintf(ptr->title + strlen(ptr->title), "%.2f%%", ptr->data[ptr->dataLen-1]); // "CPU Summary - 17.26%"
+				
+				if((ptr->flags & wf_ShowMax) && ptr->dataType == MemData)
+				{
+					int expon=3;
+					float x = ptr->maxVal;
+					
+					// Divide by multiples of 2^10 until we have a resonable number.
+					// If it's an unreasonable number of GB, this program will not display correctly.
+					while(x / 1024.0 > 1 && expon < 9)
+					{
+						x /= 1024.0;
+						expon += 3;
+					}
+					// I used an interpolation function to map 3 -> K, 6 -> M, and 9 -> G.
+					snprintf(ptr->title + strlen(ptr->title), 39-strlen(ptr->title), " of %.2f %ciB", x, 'A' + (-4*expon*expon/9+14*expon/3));
+					// "RAM - 17.26% of 3.86 GiB"
+				}
 			}
 			
 			// Pad the rest of title with spaces to be written over anything that got shorter.
-			for(int i = strlen(ptr->title); i < 23; i++)
+			for(int i = strlen(ptr->title); i < 39; i++)
 				ptr->title[i] = ' ';
-			ptr->title[24] = '\0'; // Null terminate title.
+			ptr->title[39] = '\0'; // Null terminate title.
 			
 			// Actually print title. (not actually, just schedule it for the next refresh() call.)
 			mvwaddstr(ptr->titlewin, 0, 3, ptr->title);
@@ -548,13 +569,14 @@ struct windowlist* addWin(struct windowlist** wins)
 	new->surrounding.up = NULL;
 	new->surrounding.down = NULL;
 	new->title[0] = 0;
-	new->flags = wf_Title | wf_Label | wf_Grid | wf_ExpandedTitle | wf_Border;
+	new->flags = wf_Title | wf_Label | wf_Grid | wf_ExpandedTitle | wf_ShowMax | wf_Border;
 	new->type = PercentChart;
 	new->frame = GRect(1, 1, COLS - 2, LINES - 3);
 	new->dataType = CPUData;
 	new->dataSource = 0;
 	new->data = NULL;
 	new->dataLen = 0;
+	new->maxVal = 0;
 	
 	if(!*wins)
 	{

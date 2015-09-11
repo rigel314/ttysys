@@ -114,4 +114,6 @@ void getMemInfo(struct memPercent* mem)
 		mem->swap = 0;
 	else
 		mem->swap = (float) (now.swapTotal - now.swapFree) / (float) now.swapTotal * 100.0;
+	
+	mem->now = now;
 }

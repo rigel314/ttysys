@@ -29,7 +29,7 @@ $(TARGET_DIR)/ttysys : $(objects)
 	$(LD) $(objects) -o $@  $(options)
 
 # Compile source
-$(OBJECT_DIR)/%.o : src/%.c
+$(OBJECT_DIR)/%.o : src/%.c src/*.h
 	$(CC) $(flags) -c $< -o $@
 
 # Clean up the build directories

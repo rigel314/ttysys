@@ -34,7 +34,7 @@ void showHelp()
 							"  g            Toggle grid for selected window.\n"
 							"  e            Toggle value display in current window's title.\n"
 							"  t            Toggle display of current window's title bar.\n"
-							"  l            Toggle display of current window's label sidebar.\n"
+							"  o            Toggle display of current window's label sidebar.\n"
 							"  q            Quit this program.\n"
 							"\n"
 							"Press Enter to dismiss this help.",

@@ -1,4 +1,4 @@
-ttysys v0.7.1
+ttysys v0.8
 ======
 
 ##About:
@@ -6,7 +6,7 @@ ttysys is a live ncurses cpu usage graph.
 The graph's units are in percentage.
 It updates once every second.
 ###Screenshot:
-<a href="https://raw.github.com/rigel314/ttysys/30eaa2f42746670677e24b3ca842014d9a17ece7/images/ttysys.png">![ttysys example](https://raw.github.com/rigel314/ttysys/30eaa2f42746670677e24b3ca842014d9a17ece7/images/ttysysSmall.png)</a>
+<a href="https://raw.github.com/rigel314/ttysys/26abbe0964db8f627d064974d4958542c10edd65/images/ttysys.png">![ttysys example](https://raw.github.com/rigel314/ttysys/26abbe0964db8f627d064974d4958542c10edd65/images/ttysysSmall.png)</a>
 
 ##Build:
 	> make all
@@ -20,7 +20,9 @@ Running `make install` will copy the binary to `/usr/local/bin`.  This should be
 Running `make uninstall` will `rm /usr/local/bin/ttysys`.
 
 ##Usage:
-	> ttysys
+	> ttysys [<sequence>]
+_sequence_ can consist of any number of the following characters:
+
 * `?` - Displays a help window.
 * `h` - Split current window horizontally.
 * `v` - Split current window vertically.
@@ -34,16 +36,22 @@ Running `make uninstall` will `rm /usr/local/bin/ttysys`.
 * `g` - Toggle grid for selected window.
 * `e` - Toggle value display in current window's title.
 * `t` - Toggle display of current window's title bar.
-* `l` - Toggle display of current window's label sidebar.
+* `o` - Toggle display of current window's ordinate label sidebar.
 * `q` - Quit this program.
 
-###How it works:
+These same buttons will control the program while it is running.
+
+##How it works:
+###CPU
 It works by reading the first few lines in `/proc/stat` that begin with cpu.<br />
-`man 5 proc` explained the meaning of contents of `/proc/stat`.<br />
+`man 5 proc` explains the meaning of the contents of `/proc/stat`.<br />
 These lines tell you how much time each CPU spent in different states.  The sum of each line is the total time spent for each CPU.  I read this file twice with a second in between.  Then, I subtract the two totals to have the total CPU time spent during my `sleep()`.  Now, I add the user and system numbers together and divide by my difference.  Finally, it's just a matter of displaying it nicely.
 
+###Memory
+To check the RAM and Swap, I read the appropriate lines in `/proc/meminfo`.  MemTotal, MemFree, Buffers, Cached, SwapTotal, and SwapFree are all the lines that ttysys reads.  MemFree + Buffers + Cached is the amount of free RAM usually reported by other tools, so I conformed.
+
 ##Contributions:
-I didn't start out doing it, but I will be sticking to the branching model described [here](http://nvie.com/posts/a-successful-git-branching-model/).  Pull requests should also stick to this branching model.  Thanks.
+I will be sticking to the branching model described [here](http://nvie.com/posts/a-successful-git-branching-model/).  Pull requests should also stick to this branching model.  Thanks.
 
 #Questions/Bugs?
 [Report A Bug](https://github.com/rigel314/ttysys/issues)<br />

@@ -12,7 +12,7 @@
 
 // Program Information.
 #define AppName "ttysys"
-#define AppVers "0.7"
+#define AppVers "0.8"
 
 // ASCII shiftBit for ignoring case.
 #define ASCIIshiftBit 0x20
