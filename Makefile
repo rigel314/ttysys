@@ -19,8 +19,8 @@ out = ttysys
 $(shell mkdir -p $(TARGET_DIR) 2> /dev/null)
 $(shell mkdir -p $(OBJECT_DIR) 2> /dev/null)
 
-# Some targets don't create files
-.PHONY : all clean install uninstall
+# Some targets don't create filesobjects
+.PHONY : all run clean install uninstall
 
 # Build all
 all : $(TARGET_DIR)/ttysys
@@ -31,6 +31,12 @@ $(TARGET_DIR)/ttysys : $(objects)
 # Compile source
 $(OBJECT_DIR)/%.o : src/%.c src/*.h
 	$(CC) $(flags) -c $< -o $@
+
+# Run ttysys for testing
+run :
+	make clean
+	make all
+	$(TARGET_DIR)/$(out)
 
 # Clean up the build directories
 clean :
