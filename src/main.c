@@ -16,6 +16,7 @@
 #include "windowlist.h"
 #include "cpuInfo.h"
 #include "memInfo.h"
+#include "ncurses-help.h"
 #include "common.h"
 
 // Global variable for WINDOW* to draw borders on.
@@ -30,8 +31,8 @@ int main(int argc, char** argv)
 	struct memPercent* mem;
 	int numCPUs = getNumCPUs();
 	struct windowlist* wins = NULL;
-	struct windowlist* focus;
-	WINDOW* status;
+	struct windowlist* focus = NULL;
+	WINDOW* status = NULL;
 	int argLen = 0;
 	int argCtr = 0;
 	
@@ -42,39 +43,9 @@ int main(int argc, char** argv)
 	mem = malloc(sizeof(struct memPercent));
 	
 	// ncurses init stuff
-	initscr();
-	start_color();
-	init_pair(1, COLOR_RED, COLOR_BLACK);
-	init_pair(2, COLOR_YELLOW, COLOR_BLACK);
-	init_pair(3, COLOR_BLUE, COLOR_BLACK);
-	init_pair(4, COLOR_BLACK, COLOR_WHITE);
-	raw();
-	noecho();
-	curs_set(0);
-	keypad(stdscr,TRUE);
-	halfdelay(1);
-	refresh();
-	
-	// Add first window and setup internal WINDOW*s
-	focus = addWin(&wins);
-	resizeWindowToFrame(focus);
-	
-	// Make the borders WINDOW*
-	borders = newwin(LINES - 1, COLS, 0, 0);
-	status = newwin(1, COLS, LINES - 1, 0);
-	
-	// Blue box for first border
-	wattron(borders, COLOR_PAIR(3));
-	box(borders, 0, 0);
-	wattroff(borders, COLOR_PAIR(3));
-
-	// Create status line
-	move(LINES - 1, 0);
-	wattron(status, COLOR_PAIR(4));
-	for(int i = 0; i < COLS-12; i++)
-		waddch(status, ' ');
-	waddstr(status, "'?' for help");
-	wattroff(status, COLOR_PAIR(4));
+	wins = ncurses_init();
+	status = addStatusLine();
+	focus = wins;
 	
 	if(argc == 2)
 	{
@@ -102,6 +73,9 @@ int main(int argc, char** argv)
 				}
 				touchwin(borders);
 				touchwin(status);
+				break;
+			case '~':
+				
 				break;
 			case 'g':
 				focus->flags ^= wf_Grid; // Toggle grid
