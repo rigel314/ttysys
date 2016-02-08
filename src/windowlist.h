@@ -9,6 +9,7 @@
 #define WINDOWLIST_H_
 
 #include "common.h"
+#include "ttysys_api.h"
 #include <ncurses.h>
 
 // window information.
@@ -39,6 +40,7 @@ struct windowlist
 	struct GRect frame;
 	enum winDataType dataType;
 	int dataSource;
+	nextValueFunc* nextValFunc;
 	float* data;
 	int dataLen;
 	float maxVal;

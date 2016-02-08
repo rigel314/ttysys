@@ -581,6 +581,7 @@ struct windowlist* addWin(struct windowlist** wins)
 	new->frame = GRect(1, 1, COLS - 2, LINES - 3);
 	new->dataType = VoidData;
 	new->dataSource = 0;
+	new->nextValFunc = NULL;
 	new->data = NULL;
 	new->dataLen = 0;
 	new->maxVal = 0;
