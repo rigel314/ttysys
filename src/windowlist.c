@@ -21,45 +21,48 @@
  */
 void drawScreen(struct windowlist* win)
 {
-	int* indexes = malloc(sizeof(int) * win->dataLen);
-	int axes[5];
-	int height = getContentFrame(win).size.height;
-	int width = win->dataLen;
-	
-	// Calculate the row for each grid line. 0, 25, 50, 75, 100
-	for(int i = 0; i < 5; i++)
-		axes[i] = roundf((float) height - (float) height * (25.0*i)/100.0);
-	
-	for(int i = 0; i < width; i++)
+	if(win->type == PercentChart)
 	{
-		// Calculate the row for each data point.
-		indexes[i] = roundf((float) height - (float) height * win->data[i]/100.0);
+		int* indexes = malloc(sizeof(int) * win->dataLen);
+		int axes[5];
+		int height = getContentFrame(win).size.height;
+		int width = win->dataLen;
 		
-		// Print either a space or an ACS_PLUS in each row.
-		// Only the differences will be actually be printed when the refresh() occurs.
-		for(int j = 0; j < height; j++)
-		{
-			if(j >= indexes[i])
-				mvwaddch(win->contentwin, j, i, ACS_PLUS);
-			else
-				mvwaddch(win->contentwin, j, i, ' ');
-		}
+		// Calculate the row for each grid line. 0, 25, 50, 75, 100
+		for(int i = 0; i < 5; i++)
+			axes[i] = roundf((float) height - (float) height * (25.0*i)/100.0);
 		
-		if(win->flags & wf_Grid)
+		for(int i = 0; i < width; i++)
 		{
-			for(int j = 1; j < 4; j++) // 1-4 instead of 0-5 because we don't care about 0% and 100%.
+			// Calculate the row for each data point.
+			indexes[i] = roundf((float) height - (float) height * win->data[i]/100.0);
+			
+			// Print either a space or an ACS_PLUS in each row.
+			// Only the differences will be actually be printed when the refresh() occurs.
+			for(int j = 0; j < height; j++)
 			{
-				wattron(win->contentwin, COLOR_PAIR(1));
-				if(axes[j] < indexes[i])
-					mvwaddch(win->contentwin, axes[j], i, ACS_HLINE); // Draw a line.
+				if(j >= indexes[i])
+					mvwaddch(win->contentwin, j, i, ACS_PLUS);
 				else
-					mvwaddch(win->contentwin, axes[j], i, ACS_PLUS); // We still want to see a point if was on a grid line.
-				wattroff(win->contentwin, COLOR_PAIR(1));
+					mvwaddch(win->contentwin, j, i, ' ');
+			}
+			
+			if(win->flags & wf_Grid)
+			{
+				for(int j = 1; j < 4; j++) // 1-4 instead of 0-5 because we don't care about 0% and 100%.
+				{
+					wattron(win->contentwin, COLOR_PAIR(1));
+					if(axes[j] < indexes[i])
+						mvwaddch(win->contentwin, axes[j], i, ACS_HLINE); // Draw a line.
+					else
+						mvwaddch(win->contentwin, axes[j], i, ACS_PLUS); // We still want to see a point if was on a grid line.
+					wattroff(win->contentwin, COLOR_PAIR(1));
+				}
 			}
 		}
+		
+		free(indexes);
 	}
-	
-	free(indexes);
 }
 
 /**
@@ -202,7 +205,7 @@ void resizeWindowToFrame(struct windowlist* win)
 			listShiftRightAdd(win->data, win->dataLen, 0);
 	
 	// Print 25%, 50%, and 75%.
-	if(win->flags & wf_Label)
+	if((win->flags & wf_Label) && win->type == PercentChart)
 	{
 		for(int i = 1; i < 4; i++)
 		{
@@ -462,8 +465,12 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 				else
 					strcpy(ptr->title, "Swap"); // "Swap"
 			}
+			else
+			{
+				strcpy(ptr->title,"(VoidData)");
+			}
 			
-			if(ptr->flags & wf_ExpandedTitle)
+			if((ptr->flags & wf_ExpandedTitle) && ptr->dataType != VoidData)
 			{
 				strcat(ptr->title, " - ");
 				sprintf(ptr->title + strlen(ptr->title), "%.2f%%", ptr->data[ptr->dataLen-1]); // "CPU Summary - 17.26%"
@@ -570,9 +577,9 @@ struct windowlist* addWin(struct windowlist** wins)
 	new->surrounding.down = NULL;
 	new->title[0] = 0;
 	new->flags = wf_Title | wf_Label | wf_Grid | wf_ExpandedTitle | wf_ShowMax | wf_Border;
-	new->type = PercentChart;
+	new->type = VoidChart;
 	new->frame = GRect(1, 1, COLS - 2, LINES - 3);
-	new->dataType = CPUData;
+	new->dataType = VoidData;
 	new->dataSource = 0;
 	new->data = NULL;
 	new->dataLen = 0;
