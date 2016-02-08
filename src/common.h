@@ -14,6 +14,9 @@
 #define AppName "ttysys"
 #define AppVers "0.8"
 
+// Timer frequency of internal timer.  Max update frequency for windows.
+#define TIMER_FREQ 10 // Hz
+
 // ASCII shiftBit for ignoring case.
 #define ASCIIshiftBit 0x20
 
