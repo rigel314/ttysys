@@ -10,14 +10,14 @@
 #include <stdlib.h>
 #include "signals.h"
 
-sig_atomic_t got_sigitimer = false;
+volatile sig_atomic_t got_sigitimer = false;
 
 void sigHandler(int sig)
 {
-	;
+	got_sigitimer = true;
 }
 
-void createTimer(int frequency)
+int createTimer(int frequency)
 {
 	struct itimerval it;
 	struct timeval tv;
@@ -28,10 +28,23 @@ void createTimer(int frequency)
 	it.it_interval = tv;
 	it.it_value = tv;
 	
-	setitimer(ITIMER_REAL, &it, NULL);
+	return setitimer(ITIMER_REAL, &it, NULL);
 }
 
-void registerHandlers()
+int registerHandlers()
 {
-	;
+	int retval = 0;
+	struct sigaction sa;
+
+	sa.sa_handler = sigHandler;
+	sa.sa_flags = 0; // or SA_RESTART
+	sigemptyset(&sa.sa_mask);
+	sigaddset(&sa.sa_mask,SIGALRM);
+	
+	if (sigaction(SIGALRM,&sa,NULL) == -1)
+	{
+		retval |= 1;
+	}
+	
+	return retval;
 }
