@@ -4,3 +4,4 @@
 dns
 Debug/*
 build/*
+.gdbinit
