@@ -32,7 +32,6 @@ struct windowlist* ncurses_init()
 	noecho();
 	curs_set(0);
 	keypad(stdscr,TRUE);
-	halfdelay(1);
 	refresh();
 	
 	// Add first window and setup internal WINDOW*s
@@ -57,9 +56,8 @@ WINDOW* addStatusLine()
 	// Create status line
 	move(LINES - 1, 0);
 	wattron(status, COLOR_PAIR(4));
-	for(int i = 0; i < COLS-12; i++)
+	for(int i = 0; i < COLS; i++)
 		waddch(status, ' ');
-	waddstr(status, "'?' for help");
 	wattroff(status, COLOR_PAIR(4));
 	
 	return status;
