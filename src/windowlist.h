@@ -44,6 +44,8 @@ struct windowlist
 	float* data;
 	int dataLen;
 	float maxVal;
+	int refreshPrd;
+	void* plgHandle;
 };
 
 // Used in determining arrow key mapping.

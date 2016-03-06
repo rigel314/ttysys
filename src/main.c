@@ -13,11 +13,16 @@
 #include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/select.h>
+#include <errno.h>
+#include <stdbool.h>
+#include <dlfcn.h>
 #include "windowlist.h"
 #include "cpuInfo.h"
 #include "memInfo.h"
 #include "ncurses-help.h"
 #include "common.h"
+#include "signals.h"
 
 // Global variable for WINDOW* to draw borders on.
 WINDOW* borders = NULL;
@@ -26,11 +31,6 @@ WINDOW* status = NULL;
 int main(int argc, char** argv)
 {
 	int c;
-	struct cpuTime* CPUthen;
-	struct cpuTime* CPUnow;
-	struct cpuPercent* cpu;
-	struct memPercent* mem;
-	int numCPUs = getNumCPUs();
 	struct windowlist* wins = NULL;
 	struct windowlist* focus = NULL;
 	bool commandEntry = 0;
@@ -55,13 +55,23 @@ int main(int argc, char** argv)
 	{
 		if(got_sigitimer)
 		{
-			case '?':
-				showHelp();
-				LLforeach(struct windowlist*, ptr, wins)
+			got_sigitimer = false;
+			bool shouldRefresh = false;
+			
+			// loop through each window and call nextValFunc if it's timer has expired.
+			LLforeach(struct windowlist*, ptr, wins)
+			{
+				if(ptr->refreshPrd && ptr->plgHandle && !(itimerCount % ptr->refreshPrd))
 				{
-					touchwin(ptr->titlewin);
-					touchwin(ptr->labelwin);
-					touchwin(ptr->contentwin);
+					shouldRefresh = true;
+					dlerror();
+					nextValueFunc* funcptr = dlsym(ptr->plgHandle, "nextVal");
+					if(!dlerror())
+					{
+						float out[2] = {0};
+						funcptr(out);
+						listShiftLeftAdd(ptr->data, ptr->dataLen, out[0]);
+					}
 				}
 			}
 			itimerCount++;
@@ -129,8 +139,14 @@ int main(int argc, char** argv)
 				char* space = strchr(cmdCpy, ' ');
 				if(space)
 				{
-					listShiftLeftAdd(ptr->data, ptr->dataLen, mem->swap);
-					ptr->maxVal = mem->now.swapTotal;
+					// Load dll and set time in focus
+					*space = '\0';
+					char* name = cmdCpy;
+					char* period = space + 1;
+					
+					focus->plgHandle = dlopen("build/object/libs/mem.so", RTLD_LAZY);
+					focus->refreshPrd = atoi(period);
+					focus->type = PercentChart;
 				}
 			}
 			

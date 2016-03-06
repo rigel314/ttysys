@@ -588,6 +588,8 @@ struct windowlist* addWin(struct windowlist** wins)
 	new->data = NULL;
 	new->dataLen = 0;
 	new->maxVal = 0;
+	new->refreshPrd = 0;
+	new->plgHandle = NULL;
 	
 	if(!*wins)
 	{
@@ -640,5 +642,7 @@ void freeWin(struct windowlist** wins, struct windowlist* win)
 	delwin(win->titlewin);
 	// free struct members that matter.
 	free(win->data);
+	if(win->plgHandle)
+		free(win->plgHandle);
 	free(win);
 }
