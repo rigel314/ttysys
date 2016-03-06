@@ -231,7 +231,7 @@ void splitV(struct windowlist* old)
 	struct windowlist* new;
 	bool odd;
 	
-	if(old->frame.size.height < 4)
+	if(old->frame.size.height < 10)
 		return;
 
 	new = addWin(&old);
@@ -276,7 +276,7 @@ void splitH(struct windowlist* old)
 	struct windowlist* new;
 	bool odd;
 
-	if(old->frame.size.width < 6)
+	if(old->frame.size.width < 10)
 		return;
 	
 	new = addWin(&old);
