@@ -20,7 +20,8 @@
 #include "common.h"
 
 // Global variable for WINDOW* to draw borders on.
-WINDOW* borders;
+WINDOW* borders = NULL;
+WINDOW* status = NULL;
 
 int main(int argc, char** argv)
 {

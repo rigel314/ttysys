@@ -54,5 +54,6 @@ void listShiftRightAdd(float* list, int len, float new);
 
 // Global variable for WINDOW* to draw borders on.
 extern WINDOW* borders;
+extern WINDOW* status;
 
 #endif /* COMMON_H_ */

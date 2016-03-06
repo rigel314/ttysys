@@ -441,6 +441,9 @@ void unSplit(struct windowlist** wins, struct windowlist** win)
  */
 void refreshAll(struct windowlist* wins, struct windowlist* focus)
 {
+	wrefresh(borders);
+	wrefresh(status);
+
 	LLforeach(struct windowlist*, ptr, wins)
 	{
 		// Only do title related stuff if wf_Title is set.
