@@ -8,6 +8,6 @@
 #ifndef SRC_TTYSYS_API_H_
 #define SRC_TTYSYS_API_H_
 
-typedef int (*nextValueFunc)(float* vals);
+typedef int (nextValueFunc)(float* vals);
 
 #endif /* SRC_TTYSYS_API_H_ */
