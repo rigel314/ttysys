@@ -143,23 +143,33 @@ int main(int argc, char** argv)
 			if(c == 10 || c == 13)
 			{ // '\n'       '\r'
 				leavingCmdEntry = true;
-
-				// split input
-				char cmdCpy[sizeof(cmdStr)];
-				strncpy(cmdCpy, cmdStr, cmdLen);
-				cmdCpy[cmdLen] = '\0';
+				int timePrd;
+				char name[sizeof(cmdStr)] = "";
+				char args[sizeof(cmdStr)] = "";
+				int ret;
 				
-				char* space = strchr(cmdCpy, ' ');
-				if(space)
+				ret = sscanf(cmdStr, "%d %[^( ](%[^)])", &timePrd, (char*)&name, (char*)&args);
+				
+				if(ret > 1)
 				{
-					// Load dll and set time in focus
-					*space = '\0';
-					char* name = cmdCpy;
-					char* period = space + 1;
+					char dlName[sizeof(cmdStr)+3];
+					strcpy(dlName, name);
+					strcat(dlName, ".so");
 					
-					focus->plgHandle = dlopen("build/object/libs/mem.so", RTLD_LAZY);
-					focus->refreshPrd = atoi(period);
-					focus->type = PercentChart;
+					if(focus->plgHandle)
+						cleanupPlugin(focus);
+					focus->plgHandle = dlopen(dlName, RTLD_LAZY);
+					if(focus->plgHandle)
+					{
+						if(!initializePlugin(focus, args))
+						{
+							focus->refreshPrd = timePrd;
+						}
+						else
+						{
+							cleanupPlugin(focus);
+						}
+					}
 				}
 			}
 			
