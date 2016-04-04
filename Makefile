@@ -36,14 +36,14 @@ $(OBJECT_DIR)/%.o : src/%.c src/*.h
 	$(CC) $(flags) -c $< -o $@
 
 # Generate default plugin libraries
-$(LIB_DIR)/%.so : src/libs/%.c src/libs/%.h
+$(LIB_DIR)/%.so : src/libs/%.c src/libs/%.h src/ttysys_api.h
 	$(CC) $(flags) -shared -fPIC $< -o $@
 
 # Run ttysys for testing
 run :
 	make clean
 	make all
-	$(TARGET_DIR)/$(out)
+	LD_LIBRARY_PATH=build/object/libs/ $(TARGET_DIR)/$(out)
 
 # Clean up the build directories
 clean :
