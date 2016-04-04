@@ -10,6 +10,7 @@
 #include <ncurses.h>
 #include <string.h>
 #include <limits.h>
+#include <dlfcn.h>
 #include "windowlist.h"
 #include "common.h"
 
@@ -584,7 +585,6 @@ struct windowlist* addWin(struct windowlist** wins)
 	new->frame = GRect(1, 1, COLS - 2, LINES - 3);
 	new->dataType = VoidData;
 	new->dataSource = 0;
-	new->nextValFunc = NULL;
 	new->data = NULL;
 	new->dataLen = 0;
 	new->maxVal = 0;
@@ -604,6 +604,85 @@ struct windowlist* addWin(struct windowlist** wins)
 	}
 	
 	return new;
+}
+
+int initializePlugin(struct windowlist* win, char* args)
+{
+	int argc = 0;
+	char** argv;
+	initFunc* initfunc;
+	
+	dlerror();
+	initfunc = dlsym(win->plgHandle, "init");
+	if(dlerror())
+	{
+		return 1;
+	}
+
+	int len = strlen(args);
+	for(int i=0, flag=false; i<len; i++)
+	{
+		if(args[i] == '"' && !flag)
+		{
+			args[i] = '\0';
+			flag = true;
+		}
+		else if(args[i] == '"' && flag)
+		{
+			args[i] = '\0';
+			flag = false;
+		}
+		
+		if(args[i] == ' ' && !flag)
+			args[i] = '\0';
+		
+		if(args[i] == ',' && !flag)
+		{
+			args[i] = '\0';
+			argc++;
+		}
+	}
+	
+	argc++;
+	
+	argv=malloc(sizeof(char*)*argc);
+	if(!argv)
+		return 2;
+	
+	argv[0] = NULL;
+	
+	for(int i=0,flag=false,c=1,off=0; i<len; i++)
+	{
+		if(args[i] == '\0' && flag)
+		{
+			argv[c++] = args+off;
+			flag = false;
+		}
+		
+		if(args[i] != '\0' && !flag)
+		{
+			flag = true;
+			off = i;
+		}
+	}
+	
+	initfunc(&(win->plgContext), argc, argv);
+	win->type = PercentChart;
+	resizeWindowToFrame(win);
+
+	free(argv);
+	
+	return 0;
+}
+
+void cleanupPlugin(struct windowlist* win)
+{
+	if(win->plgHandle)
+	{
+//		if(win->plgData.cleanUp)
+//			win->plgData.cleanUp();
+		dlclose(win->plgHandle);
+	}
 }
 
 /**
