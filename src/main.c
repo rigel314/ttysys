@@ -90,6 +90,12 @@ int main(int argc, char** argv)
 					drawScreen(ptr); // Draw each window's content.
 				}
 				refreshAll(wins, focus);
+				
+				if(commandEntry)
+				{
+					wmove(status, 0, cmdLen);
+					wrefresh(status);
+				}
 			}
 		}
 		
