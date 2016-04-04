@@ -5,7 +5,13 @@
  *      Author: cody
  *
  *	TODO:
+ *		Make command entry cooler.
+ *		load plugins correctly
+ *		make more plugins
+ *		make the api cooler
+ *		actually use the api
  *		New input method. + New help window.
+ *		CLI args for default startup.
  *		Corners in the border.
  *		Resizeability.
  */
@@ -53,8 +59,9 @@ int main(int argc, char** argv)
 
 	while(1)
 	{
+		// When a timer event occurs, update windows that are supposed to be updated.
 		if(got_sigitimer)
-		{
+		{ // Set in signal handler for sigItimer
 			got_sigitimer = false;
 			bool shouldRefresh = false;
 			
@@ -62,14 +69,14 @@ int main(int argc, char** argv)
 			LLforeach(struct windowlist*, ptr, wins)
 			{
 				if(ptr->refreshPrd && ptr->plgHandle && !(itimerCount % ptr->refreshPrd))
-				{
+				{ // itimerCount % ptr->refreshPrd is 0 when this window should be refreshed
 					shouldRefresh = true;
 					dlerror();
 					nextValueFunc* funcptr = dlsym(ptr->plgHandle, "nextVal");
 					if(!dlerror())
 					{
 						float out[2] = {0};
-						funcptr(out);
+						funcptr(NULL,out); // Call the nextValue function
 						listShiftLeftAdd(ptr->data, ptr->dataLen, out[0]);
 					}
 				}
@@ -77,7 +84,7 @@ int main(int argc, char** argv)
 			itimerCount++;
 			
 			if(shouldRefresh)
-			{
+			{ // only set if a window has been marked for update.
 				LLforeach(struct windowlist*, ptr, wins)
 				{
 					drawScreen(ptr); // Draw each window's content.
