@@ -14,12 +14,14 @@ enum winType { VoidChart, PercentChart, ValueChart, TextChart };
 
 struct initData;
 
-// You should have a function called 'init' that matches this signature:
+// You must have a function called 'init' that matches this signature:
 typedef struct initData (initFunc)(void** context, int argc, char** argv);
 struct initData init(void** context, int argc, char** argv);
 
+// You must have a function that matches this signature
 typedef int (nextValueFunc)(void** context, float* vals);
-typedef int (titleFunc)(void** context, char title[TITLE_LEN]);
+
+// You may define a function to cleanup anything that needs cleaned when properly exiting.
 typedef void (cleanupFunc)(void** context);
 
 // When a plugin returns this, NULL means ttysys won't call the function.
@@ -27,8 +29,10 @@ struct initData
 {
 	nextValueFunc* nextValue;
 	cleanupFunc* cleanUp;
-	titleFunc* title;
 	enum winType type;
 };
+
+// You can call this during any of your functions to set the title of the window your function is called for. 
+extern void setTitle(char* test);
 
 #endif /* SRC_TTYSYS_API_H_ */
