@@ -3,7 +3,7 @@ CC = gcc
 LD = gcc
 
 #Flags
-options = -lncurses -lm -ldl
+options = -lncurses -lm -ldl -Wl,--dynamic-list=src/ttysys_export_list.txt
 flags = -O2 --std=gnu99 -Wall
 
 # Build directories
