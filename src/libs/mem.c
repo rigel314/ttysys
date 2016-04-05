@@ -127,6 +127,10 @@ int nextVal(void** context, float* outs)
 	
 	outs[0] = mem.ram;
 	
+	char str[100];
+	sprintf(str,"%f",mem.ram);
+	setTitle(str);
+	
 	return 0;
 }
 
@@ -136,7 +140,6 @@ struct initData init(void** context, int argc, char** argv)
 	
 	id.nextValue = &nextVal;
 	id.cleanUp = NULL;
-	id.title = NULL;
 	id.type = PercentChart;
 	
 	return id;
