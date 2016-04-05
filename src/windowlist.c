@@ -666,8 +666,8 @@ int initializePlugin(struct windowlist* win, char* args)
 		}
 	}
 	
-	initfunc(&(win->plgContext), argc, argv);
-	win->type = PercentChart;
+	struct initData id = initfunc(&(win->plgContext), argc, argv);
+	win->type = id.type;
 	resizeWindowToFrame(win);
 
 	free(argv);
