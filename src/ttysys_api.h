@@ -24,9 +24,12 @@ typedef int (nextValueFunc)(void** context, float* vals);
 // You may define a function to cleanup anything that needs cleaned when properly exiting.
 typedef void (cleanupFunc)(void** context);
 
+enum initStatus {initStatus_Success, initStatus_ArgFailure, initStatus_GeneralFailure = 255};
+
 // When a plugin returns this, NULL means ttysys won't call the function.
 struct initData
 {
+	enum initStatus status;
 	nextValueFunc* nextValue;
 	cleanupFunc* cleanUp;
 	enum winType type;
