@@ -125,21 +125,44 @@ int nextVal(void** context, float* outs)
 	
 	getMemInfo(&mem);
 	
-	outs[0] = mem.ram;
+	int* type = (int*) *context;
+	
+	if(*type == 1)
+		outs[0] = mem.ram;
+	else
+		outs[0] = mem.swap;
 	
 	char str[100];
-	sprintf(str,"%f",mem.ram);
+	sprintf(str,"%f",mem.swap);
 	setTitle(str);
 	
 	return 0;
+}
+
+void destroy(void** context)
+{
+	free(*context);
 }
 
 struct initData init(void** context, int argc, char** argv)
 {
 	struct initData id;
 	
+	*context = malloc(sizeof(int));
+	int* type = (int*) *context;
+	
+	*type = 0;
+	
+	if(argc < 2 || !strcmp(argv[1],"ram"))
+		*type = 1;
+	if(argc == 2 && !strcmp(argv[1],"swap"))
+		*type = 2;
+	
+	id.status = initStatus_Success;
+	if(*type == 0)
+		id.status = initStatus_ArgFailure;
 	id.nextValue = &nextVal;
-	id.cleanUp = NULL;
+	id.cleanUp = &destroy;
 	id.type = PercentChart;
 	
 	return id;
