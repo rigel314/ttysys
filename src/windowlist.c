@@ -620,7 +620,7 @@ int initializePlugin(struct windowlist* win, char* args)
 	}
 
 	int len = strlen(args);
-	for(int i=0, flag=false; i<len; i++)
+	for(int i=0, flag=false; i<=len && len > 0; i++)
 	{
 		if(args[i] == '"' && !flag)
 		{
@@ -634,11 +634,18 @@ int initializePlugin(struct windowlist* win, char* args)
 		}
 		
 		if(args[i] == ' ' && !flag)
+		{
 			args[i] = '\0';
+			argc++;
+		}
 		
 		if(args[i] == ',' && !flag)
 		{
 			args[i] = '\0';
+			argc++;
+		}
+		if(args[i] == '\0')
+		{
 			argc++;
 		}
 	}
@@ -651,7 +658,7 @@ int initializePlugin(struct windowlist* win, char* args)
 	
 	argv[0] = NULL;
 	
-	for(int i=0,flag=false,c=1,off=0; i<len; i++)
+	for(int i=0,flag=false,c=1,off=0; i<=len; i++)
 	{
 		if(args[i] == '\0' && flag)
 		{
@@ -667,20 +674,24 @@ int initializePlugin(struct windowlist* win, char* args)
 	}
 	
 	struct initData id = initfunc(&(win->plgContext), argc, argv);
-	win->type = id.type;
-	resizeWindowToFrame(win);
+	
+	if(id.status == initStatus_Success)
+	{
+		win->type = id.type;
+		resizeWindowToFrame(win);
+	}
 
 	free(argv);
 	
-	return 0;
+	return id.status;
 }
 
 void cleanupPlugin(struct windowlist* win)
 {
 	if(win->plgHandle)
 	{
-//		if(win->plgData.cleanUp)
-//			win->plgData.cleanUp();
+		if(win->plgData.cleanUp)
+			win->plgData.cleanUp(&(win->plgContext));
 		dlclose(win->plgHandle);
 	}
 }
