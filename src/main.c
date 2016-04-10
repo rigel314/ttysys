@@ -76,7 +76,7 @@ int main(int argc, char** argv)
 					if(!dlerror())
 					{
 						float out[2] = {0};
-						funcptr(NULL,out); // Call the nextValue function
+						funcptr(&(ptr->plgContext),out); // Call the nextValue function
 						listShiftLeftAdd(ptr->data, ptr->dataLen, out[0]);
 					}
 				}
