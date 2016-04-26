@@ -24,8 +24,6 @@
 #include <stdbool.h>
 #include <dlfcn.h>
 #include "windowlist.h"
-#include "cpuInfo.h"
-#include "memInfo.h"
 #include "ncurses-help.h"
 #include "common.h"
 #include "signals.h"
