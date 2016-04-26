@@ -208,8 +208,8 @@ int nextVal(void** context, float* outs)
 		if(numEvents == 0)
 			continue; // Skip if no events happened for this processor.  Shouldn't happen unless wait didn't work and we didn't return.
 		
-		cpu[i].user = (float) (ctx->cpuTimesLast[i].user - cts[i].user) / (float) numEvents * 100.0;
-		cpu[i].sys = (float) (ctx->cpuTimesLast[i].sys - cts[i].sys) / (float) numEvents * 100.0;
+		cpu[i].user = (float) (cts[i].user - ctx->cpuTimesLast[i].user) / (float) numEvents * 100.0;
+		cpu[i].sys = (float) (cts[i].sys - ctx->cpuTimesLast[i].sys) / (float) numEvents * 100.0;
 		cpu[i].total = cpu[i].user + cpu[i].sys;
 	}
 	
