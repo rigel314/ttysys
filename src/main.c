@@ -31,12 +31,12 @@
 // Global variable for WINDOW* to draw borders on.
 WINDOW* borders = NULL;
 WINDOW* status = NULL;
+struct windowlist* focus = NULL;
 
 int main(int argc, char** argv)
 {
 	int c;
 	struct windowlist* wins = NULL;
-	struct windowlist* focus = NULL;
 	bool commandEntry = 0;
 	bool leavingCmdEntry = 0;
 	char cmdStr[100] = {0};
