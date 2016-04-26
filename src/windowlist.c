@@ -469,7 +469,7 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 				else
 					strcpy(ptr->title, "Swap"); // "Swap"
 			}
-			else
+			else if(ptr->dataType == VoidData)
 			{
 				strcpy(ptr->title,"(VoidData)");
 			}
@@ -678,6 +678,7 @@ int initializePlugin(struct windowlist* win, char* args)
 	if(id.status == initStatus_Success)
 	{
 		win->type = id.type;
+		win->dataType = UserData;
 		resizeWindowToFrame(win);
 	}
 
