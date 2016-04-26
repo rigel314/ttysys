@@ -38,4 +38,6 @@ struct initData
 // You can call this during any of your functions to set the title of the window your function is called for. 
 extern void setTitle(char* test);
 
+extern int getRefreshRate();
+
 #endif /* SRC_TTYSYS_API_H_ */

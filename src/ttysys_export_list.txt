@@ -2,5 +2,6 @@
     extern "C"
     {
        setTitle;
+       getRefreshRate;
     };
 };

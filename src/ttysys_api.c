@@ -6,10 +6,19 @@
  */
 
 #include <ncurses.h>
+#include <string.h>
+#include "windowlist.h"
+#include "ttysys_api.h"
 
-extern WINDOW* status;
+extern struct windowlist* focus;
 
 void setTitle(char* test)
 {
-	mvwprintw(status,0,60,test);
+//	mvwprintw(focus->titlewin,0,0,test);
+	strncpy(focus->title, test, TITLE_LEN);
+}
+
+int getRefreshRate()
+{
+	return focus->refreshPrd;
 }
