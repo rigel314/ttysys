@@ -122,18 +122,23 @@ void getMemInfo(struct memPercent* mem)
 int nextVal(void** context, float* outs)
 {
 	struct memPercent mem;
+	char str[100];
 	
 	getMemInfo(&mem);
 	
 	int* type = (int*) *context;
 	
 	if(*type == 1)
+	{
 		outs[0] = mem.ram;
+		sprintf(str,"RAM");
+	}
 	else
+	{
 		outs[0] = mem.swap;
+		sprintf(str,"Swap");
+	}
 	
-	char str[100];
-	sprintf(str,"%f",mem.swap);
 	setTitle(str);
 	
 	return 0;

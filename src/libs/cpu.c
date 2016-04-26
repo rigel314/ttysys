@@ -1,17 +1,31 @@
 /*
- * cpuInfo.c
+ * cpu.c
  *
  *  Created on: Jan 1, 2014
  *      Author: cody
  */
 
+#include "../ttysys_api.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <ncurses.h>
 #include <sys/select.h>
-#include "cpuInfo.h"
-#include "common.h"
+#include "cpu.h"
+
+/**
+ * int strchrCount(char* s, char c)
+ * 	s is a string.
+ * 	c is a character to look for.
+ * returns number of occurrences of c in s.
+ */
+int strchrCount(char* s, char c)
+{
+	int i;
+	for (i = 0; s[i]; (s[i] == c) ? (void) i++ : (void) s++); // always increment s or i.  Casts to void to avoid warnings.
+	return i;
+}
 
 /**
  * int getNumCPUs()
@@ -146,22 +160,10 @@ int readCPUs(int numCPUs, struct cpuTime* now)
  */
 int getCPUtime(struct cpuPercent* cpu, int numCPUs, struct cpuTime* first, struct cpuTime* second)
 {
-	struct timeval wait = {.tv_sec = 1, .tv_usec = 0};
-	fd_set set;
 	long numEvents;
 	
 	// read once.
 	readCPUs(numCPUs, first);
-
-	// Zero out the set, then add 0 to the set to monitor stdin for keypresses.
-	FD_ZERO(&set);
-	FD_SET(0, &set);
-	// Wait 1 second. Or gather input.
-	select(1, &set, NULL, NULL, &wait);
-	
-	// If input was gathered.
-	if(FD_ISSET(0, &set))
-		return 1;
 	
 	// Read again.
 	readCPUs(numCPUs, second);
@@ -179,4 +181,80 @@ int getCPUtime(struct cpuPercent* cpu, int numCPUs, struct cpuTime* first, struc
 	}
 
 	return 0;
+}
+
+int nextVal(void** context, float* outs)
+{
+	long numEvents;
+	char str[100];
+
+	struct cpuCtx* ctx = (struct cpuCtx*) *context;
+	struct cpuTime cts[ctx->numCPUs+1];
+	struct cpuPercent cpu[ctx->numCPUs + 1];
+	
+	if(!ctx->valid)
+	{
+		readCPUs(ctx->numCPUs, ctx->cpuTimesLast);
+		ctx->valid = true;
+		outs[0] = 0;
+		return 0;
+	}
+	else
+		readCPUs(ctx->numCPUs, cts);
+	
+	for(int i = 0; i < ctx->numCPUs + 1; i++)
+	{
+		numEvents = cts[i].total - ctx->cpuTimesLast[i].total;
+		if(numEvents == 0)
+			continue; // Skip if no events happened for this processor.  Shouldn't happen unless wait didn't work and we didn't return.
+		
+		cpu[i].user = (float) (ctx->cpuTimesLast[i].user - cts[i].user) / (float) numEvents * 100.0;
+		cpu[i].sys = (float) (ctx->cpuTimesLast[i].sys - cts[i].sys) / (float) numEvents * 100.0;
+		cpu[i].total = cpu[i].user + cpu[i].sys;
+	}
+	
+	if(ctx->whichCPU > 0)
+	{
+		outs[0] = cpu[ctx->whichCPU + 1].total;
+		sprintf(str,"CPU %d", ctx->whichCPU);
+	}
+	else
+	{
+		outs[0] = cpu[0].total;
+		sprintf(str,"CPU Summary");
+	}
+	setTitle(str);
+	
+	return 0;
+}
+
+void destroy(void** context)
+{
+	free(*context);
+}
+
+struct initData init(void** context, int argc, char** argv)
+{
+	struct initData id;
+	
+	*context = malloc(sizeof(struct cpuCtx));
+	struct cpuCtx* ctx = (struct cpuCtx*) *context;
+	
+	ctx->whichCPU = -1;
+
+	if(argc < 2 || !strcmp(argv[1],"all"))
+		ctx->whichCPU = -1;
+	if(argc == 2)
+		ctx->whichCPU = atoi(argv[1]);
+
+	ctx->numCPUs = getNumCPUs();
+	ctx->cpuTimesLast = malloc(sizeof(struct cpuTime) * (ctx->numCPUs + 1));
+	ctx->valid = false;
+	
+	id.status = initStatus_Success;
+	id.nextValue = &nextVal;
+	id.cleanUp = &destroy;
+	id.type = PercentChart;
+	
+	return id;
 }

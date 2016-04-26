@@ -76,19 +76,6 @@ char* getDirectionString(int num)
 }
 
 /**
- * int strchrCount(char* s, char c)
- * 	s is a string.
- * 	c is a character to look for.
- * returns number of occurrences of c in s.
- */
-int strchrCount(char* s, char c)
-{
-	int i;
-	for (i = 0; s[i]; (s[i] == c) ? (void) i++ : (void) s++); // always increment s or i.  Casts to void to avoid warnings.
-	return i;
-}
-
-/**
  * void listShiftLeftAdd(float* list, int len, float new)
  * 	list is the list to be shifted.
  * 	len is the length of the list.
