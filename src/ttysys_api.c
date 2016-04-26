@@ -10,15 +10,15 @@
 #include "windowlist.h"
 #include "ttysys_api.h"
 
-extern struct windowlist* focus;
+extern struct windowlist* plgWin;
 
 void setTitle(char* test)
 {
 //	mvwprintw(focus->titlewin,0,0,test);
-	strncpy(focus->title, test, TITLE_LEN);
+	strncpy(plgWin->title, test, TITLE_LEN);
 }
 
 int getRefreshRate()
 {
-	return focus->refreshPrd;
+	return plgWin->refreshPrd;
 }

@@ -32,6 +32,7 @@
 WINDOW* borders = NULL;
 WINDOW* status = NULL;
 struct windowlist* focus = NULL;
+struct windowlist* plgWin;
 
 int main(int argc, char** argv)
 {
@@ -66,6 +67,7 @@ int main(int argc, char** argv)
 			// loop through each window and call nextValFunc if it's timer has expired.
 			LLforeach(struct windowlist*, ptr, wins)
 			{
+				plgWin = ptr;
 				if(ptr->refreshPrd && ptr->plgHandle && !(itimerCount % ptr->refreshPrd))
 				{ // itimerCount % ptr->refreshPrd is 0 when this window should be refreshed
 					shouldRefresh = true;
