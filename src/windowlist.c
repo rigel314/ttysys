@@ -694,7 +694,9 @@ void cleanupPlugin(struct windowlist* win)
 		if(win->plgData.cleanUp)
 			win->plgData.cleanUp(&(win->plgContext));
 		dlclose(win->plgHandle);
+		win->plgHandle = NULL;
 	}
+	win->plgContext = NULL;
 }
 
 /**

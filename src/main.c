@@ -6,7 +6,6 @@
  *
  *	TODO:
  *		Make command entry cooler.
- *		load plugins correctly
  *		make more plugins
  *		make the api cooler
  *		actually use the api
