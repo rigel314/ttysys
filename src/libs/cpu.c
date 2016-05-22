@@ -252,6 +252,8 @@ struct initData init(void** context, int argc, char** argv)
 	ctx->valid = false;
 	
 	id.status = initStatus_Success;
+	if(ctx->whichCPU > ctx->numCPUs)
+		id.status = initStatus_ArgFailure;
 	id.nextValue = &nextVal;
 	id.cleanUp = &destroy;
 	id.type = PercentChart;
