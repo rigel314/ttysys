@@ -242,10 +242,10 @@ struct initData init(void** context, int argc, char** argv)
 	
 	ctx->whichCPU = -1;
 
-	if(argc < 2 || !strcmp(argv[1],"all"))
-		ctx->whichCPU = -1;
 	if(argc == 2)
 		ctx->whichCPU = atoi(argv[1]);
+	if(argc < 2 || !strcmp(argv[1],"all"))
+		ctx->whichCPU = -1;
 
 	ctx->numCPUs = getNumCPUs();
 	ctx->cpuTimesLast = malloc(sizeof(struct cpuTime) * (ctx->numCPUs + 1));
