@@ -119,27 +119,28 @@ void getMemInfo(struct memPercent* mem)
 	mem->now = now;
 }
 
+void printTitle(int type)
+{
+	if(type == 1)
+		setTitle("RAM");
+	else
+		setTitle("Swap");
+}
+
 int nextVal(void** context, float* outs)
 {
 	struct memPercent mem;
-	char str[100];
-	
+
 	getMemInfo(&mem);
 	
 	int* type = (int*) *context;
 	
 	if(*type == 1)
-	{
 		outs[0] = mem.ram;
-		sprintf(str,"RAM");
-	}
 	else
-	{
 		outs[0] = mem.swap;
-		sprintf(str,"Swap");
-	}
-	
-	setTitle(str);
+
+	printTitle(*type);
 	
 	return 0;
 }
@@ -166,6 +167,8 @@ struct initData init(void** context, int argc, char** argv)
 	id.status = initStatus_Success;
 	if(*type == 0)
 		id.status = initStatus_ArgFailure;
+	else
+		printTitle(*type);
 	id.nextValue = &nextVal;
 	id.cleanUp = &destroy;
 	id.type = PercentChart;

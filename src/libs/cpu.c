@@ -183,10 +183,20 @@ int getCPUtime(struct cpuPercent* cpu, int numCPUs, struct cpuTime* first, struc
 	return 0;
 }
 
+void printTitle(int which)
+{
+	char str[100];
+
+	if(which >= 0)
+		sprintf(str,"CPU %d", which);
+	else
+		sprintf(str,"CPU Summary");
+	setTitle(str);
+}
+
 int nextVal(void** context, float* outs)
 {
 	long numEvents;
-	char str[100];
 
 	struct cpuCtx* ctx = (struct cpuCtx*) *context;
 	struct cpuTime cts[ctx->numCPUs+1];
@@ -213,17 +223,13 @@ int nextVal(void** context, float* outs)
 		cpu[i].total = cpu[i].user + cpu[i].sys;
 	}
 	
-	if(ctx->whichCPU > 0)
-	{
+	if(ctx->whichCPU >= 0)
 		outs[0] = cpu[ctx->whichCPU + 1].total;
-		sprintf(str,"CPU %d", ctx->whichCPU);
-	}
 	else
-	{
 		outs[0] = cpu[0].total;
-		sprintf(str,"CPU Summary");
-	}
-	setTitle(str);
+
+	
+	printTitle(ctx->whichCPU);
 	
 	return 0;
 }
@@ -252,8 +258,10 @@ struct initData init(void** context, int argc, char** argv)
 	ctx->valid = false;
 	
 	id.status = initStatus_Success;
-	if(ctx->whichCPU > ctx->numCPUs)
+	if(ctx->whichCPU >= ctx->numCPUs)
 		id.status = initStatus_ArgFailure;
+	else
+		printTitle(ctx->whichCPU);
 	id.nextValue = &nextVal;
 	id.cleanUp = &destroy;
 	id.type = PercentChart;
