@@ -10,6 +10,7 @@
 #include <ncurses.h>
 #include <string.h>
 #include <limits.h>
+#include <float.h>
 #include <dlfcn.h>
 #include "windowlist.h"
 #include "common.h"
@@ -22,12 +23,13 @@
  */
 void drawScreen(struct windowlist* win)
 {
+	int* indexes = malloc(sizeof(int) * win->dataLen);
+	int height = getContentFrame(win).size.height;
+	int width = win->dataLen;
+
 	if(win->type == PercentChart)
 	{
-		int* indexes = malloc(sizeof(int) * win->dataLen);
 		int axes[5];
-		int height = getContentFrame(win).size.height;
-		int width = win->dataLen;
 		
 		// Calculate the row for each grid line. 0, 25, 50, 75, 100
 		for(int i = 0; i < 5; i++)
@@ -61,9 +63,49 @@ void drawScreen(struct windowlist* win)
 				}
 			}
 		}
-		
-		free(indexes);
 	}
+	else if(win->type == ScaledValueChart)
+	{
+		float dmin = FLT_MAX;
+		float dmax = -FLT_MAX;
+		
+		for(int i=0; i < win->validDataLen; i++)
+		{
+			dmin = min(dmin, win->data[win->dataLen-i-1]);
+			dmax = max(dmax, win->data[win->dataLen-i-1]);
+		}
+		
+		if(dmin == dmax)
+		{
+			dmin--;
+			dmax++;
+		}
+		
+		for(int i = 0; i < width; i++)
+		{
+			// Calculate the row for each data point.
+			indexes[i] = roundf((float) height - (float) height * (win->data[i]-dmin)/(dmax-dmin));
+			
+			// Print either a space or an ACS_PLUS in each row.
+			// Only the differences will be actually be printed when the refresh() occurs.
+			for(int j = 0; j < height; j++)
+			{
+				if(j >= indexes[i])
+					mvwaddch(win->contentwin, j, i, ACS_PLUS);
+				else
+					mvwaddch(win->contentwin, j, i, ' ');
+			}
+			
+			if(win->flags & wf_Grid)
+			{
+				;
+			}
+		}
+		int c = 2+2;
+		c += ++c;
+	}
+	
+	free(indexes);
 }
 
 /**
