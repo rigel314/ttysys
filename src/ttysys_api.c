@@ -12,10 +12,10 @@
 
 extern struct windowlist* plgWin;
 
-void setTitle(char* test)
+void setTitle(char* title)
 {
 //	mvwprintw(focus->titlewin,0,0,test);
-	strncpy(plgWin->title, test, TITLE_LEN);
+	strncpy(plgWin->title, title, TITLE_LEN);
 }
 
 int getRefreshRate()
