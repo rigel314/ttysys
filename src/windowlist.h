@@ -41,6 +41,7 @@ struct windowlist
 	int dataSource;
 	float* data;
 	int dataLen;
+	int validDataLen;
 	float maxVal;
 	int refreshPrd;
 	void* plgHandle;

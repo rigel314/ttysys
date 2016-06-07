@@ -629,6 +629,7 @@ struct windowlist* addWin(struct windowlist** wins)
 	new->dataSource = 0;
 	new->data = NULL;
 	new->dataLen = 0;
+	new->validDataLen = 0;
 	new->maxVal = 0;
 	new->refreshPrd = 0;
 	new->plgHandle = NULL;
