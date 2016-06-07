@@ -124,8 +124,8 @@ int main(int argc, char** argv)
 		if(commandEntry && c > 0)
 		{
 			wattron(status, COLOR_PAIR(4));
-			if((((c|ASCIIshiftBit) >= 'a' && (c|ASCIIshiftBit) <= 'z') || (c >= '0' && c <='9') || c == ' ' || c == '(' || c == ')' || c == ',') && cmdLen < sizeof(cmdStr)-1)
-			{
+			if((c >= ' ' && c <= '~') && cmdLen < sizeof(cmdStr)-1)
+			{ // Printable ascii.
 				cmdStr[cmdLen++] = c;
 				cmdStr[cmdLen] = '\0';
 			}
