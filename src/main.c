@@ -155,6 +155,8 @@ int main(int argc, char** argv)
 					strcpy(dlName, name);
 					strcat(dlName, ".so");
 					
+					plgWin = focus;
+					
 					if(focus->plgHandle)
 						cleanupPlugin(focus);
 					focus->plgHandle = dlopen(dlName, RTLD_LAZY);
