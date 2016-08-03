@@ -23,12 +23,11 @@
  */
 void drawScreen(struct windowlist* win)
 {
-	int* indexes = malloc(sizeof(int) * win->dataLen);
-	int height = getContentFrame(win).size.height;
-	int width = win->dataLen;
-
 	if(win->type == PercentChart)
 	{
+		int* indexes = malloc(sizeof(int) * win->dataLen);
+		int height = getContentFrame(win, NULL).size.height;
+		int width = win->dataLen;
 		int axes[5];
 		
 		// Calculate the row for each grid line. 0, 25, 50, 75, 100
@@ -63,23 +62,25 @@ void drawScreen(struct windowlist* win)
 				}
 			}
 		}
+		
+		free(indexes);
 	}
 	else if(win->type == ScaledValueChart)
 	{
-		float dmin = FLT_MAX;
-		float dmax = -FLT_MAX;
+		float dmin, dmax;
 		
-		for(int i=0; i < win->validDataLen; i++)
-		{
-			dmin = min(dmin, win->data[win->dataLen-i-1]);
-			dmax = max(dmax, win->data[win->dataLen-i-1]);
-		}
+		minMaxList(win, &dmin, &dmax);
 		
 		if(dmin == dmax)
 		{
 			dmin--;
 			dmax++;
 		}
+		
+		resizeWindowToFrame(win);
+		int* indexes = malloc(sizeof(int) * win->dataLen);
+		int width = win->dataLen;
+		int height = getContentFrame(win, NULL).size.height;
 		
 		for(int i = 0; i < width; i++)
 		{
@@ -101,12 +102,30 @@ void drawScreen(struct windowlist* win)
 				;
 			}
 		}
-		int c = 2+2;
-		c += ++c;
+		
+		free(indexes);
 	}
 	
-	free(indexes);
 }
+
+int minMaxList(struct windowlist* win, float* omin, float* omax)
+{
+	float dmin = FLT_MAX;
+	float dmax = -FLT_MAX;
+	
+	for(int i=0; i < win->validDataLen; i++)
+	{
+		dmin = min(dmin, win->data[win->dataLen-i-1]);
+		dmax = max(dmax, win->data[win->dataLen-i-1]);
+	}
+
+	*omin = dmin;
+	*omax = dmax;
+	
+	return 0;
+	
+}
+
 
 /**
  * void remapArrows(struct windowlist* wins, struct windowlist* win)
@@ -180,21 +199,58 @@ void remapArrows(struct windowlist* wins, struct windowlist* win)
  * 	win is the window that you want the content frame of
  * uses win's frame and flags to determine what the frame of the contentwin should be.
  */
-struct GRect getContentFrame(struct windowlist* win)
+struct GRect getContentFrame(struct windowlist* win, struct GRect* labelFrame)
 {
 	struct GRect frame = win->frame;
+	struct GRect label = win->frame;
 	
 	if(win->flags & wf_Title)
 	{ // Title is always 1 row tall.
 		frame.origin.y++;
 		frame.size.height--;
+		
+		label.origin.y++;
+		label.size.height--;
 	}
 	
 	if(win->flags & wf_Label)
-	{ // Label is always 3 columns wide.
-		frame.origin.x += 3;
-		frame.size.width -= 3;
+	{
+		int size = 0;
+		
+		if(win->type == VoidChart)
+			size = 3;
+		
+		if(win->type == PercentChart)
+			size = 3; // Label is always 3 columns wide.
+		
+		if(win->type == ScaledValueChart)
+		{
+			float dmin, dmax;
+			minMaxList(win, &dmin, &dmax);
+
+			int iminLen = snprintf(NULL, 0, "%d", (int)dmin);
+			int imaxLen = snprintf(NULL, 0, "%d", (int)dmax);
+			int dminLen = snprintf(NULL, 0, "%1.5E", (double)dmin);
+			int dmaxLen = snprintf(NULL, 0, "%1.5E", (double)dmax);
+			
+			if(iminLen <= 6 && imaxLen <= 6)
+			{
+				size = 6;
+			}
+			else
+			{
+				size = max(dminLen, dmaxLen);
+				size = 13;
+			}
+		}
+		frame.origin.x += size;
+		frame.size.width -= size;
+		
+		label.size.width = size;
 	}
+	
+	if(labelFrame)
+		*labelFrame = label;
 	
 	return frame;
 }
@@ -209,15 +265,16 @@ void resizeWindowToFrame(struct windowlist* win)
 {
 	int diff;
 	int newLen;
-	struct GRect contentFrame = getContentFrame(win);
+	struct GRect labelFrame;
+	struct GRect contentFrame = getContentFrame(win, &labelFrame);
 	
 	// Resize.
 	wresize(win->titlewin, 1, win->frame.size.width);
-	wresize(win->labelwin, contentFrame.size.height, 3);
+	wresize(win->labelwin, labelFrame.size.height, labelFrame.size.width);
 	wresize(win->contentwin, contentFrame.size.height, contentFrame.size.width);
 	// Move.
 	mvwin(win->titlewin, win->frame.origin.y, win->frame.origin.x);
-	mvwin(win->labelwin, contentFrame.origin.y, win->frame.origin.x);
+	mvwin(win->labelwin, labelFrame.origin.y, labelFrame.origin.x);
 	mvwin(win->contentwin, contentFrame.origin.y, contentFrame.origin.x);
 	// Clear so they won't leave garbage around.
 	wclear(win->titlewin);
@@ -232,12 +289,16 @@ void resizeWindowToFrame(struct windowlist* win)
 	{
 		diff = 0;
 		win->data = calloc(newLen, sizeof(float));
+		win->validDataLen = 0;
 	}
 	
 	// A negative diff means data got smaller.  realloc() truncates, so we need to shift all data by diff first.
 	if(diff < 0)
+	{
 		for(int i = 0; i < abs(diff); i++)
 			listShiftLeftAdd(win->data, win->dataLen, 0);
+		win->validDataLen = max(0,win->validDataLen+diff);
+	}
 	
 	win->dataLen = newLen;
 	win->data = realloc(win->data, sizeof(float) * newLen);
@@ -248,17 +309,41 @@ void resizeWindowToFrame(struct windowlist* win)
 			listShiftRightAdd(win->data, win->dataLen, 0);
 	
 	// Print 25%, 50%, and 75%.
-	if((win->flags & wf_Label) && win->type == PercentChart)
+	if(win->flags & wf_Label)
 	{
-		for(int i = 1; i < 4; i++)
+		int height = getContentFrame(win, NULL).size.height;
+		
+		if(win->type == PercentChart)
 		{
-			int height = getContentFrame(win).size.height;
-			int row = roundf((float) height - (float) height * (25.0*i)/100.0);
-			char str[4];
+			for(int i = 1; i < 4; i++)
+			{
+				int row = roundf((float) height - (float) height * (25.0*i)/100.0);
+				char str[4];
+				
+				sprintf(str, "%d%%", 25*i);
+				
+				mvwaddstr(win->labelwin, row, 0, str);
+			}
+		}
+		
+		if(win->type == ScaledValueChart)
+		{
+			float dmin, dmax;
+			minMaxList(win, &dmin, &dmax);
 			
-			sprintf(str, "%d%%", 25*i);
+			int iminLen = snprintf(NULL, 0, "%d", (int)dmin);
+			int imaxLen = snprintf(NULL, 0, "%d", (int)dmax);
 			
-			mvwaddstr(win->labelwin, row, 0, str);
+			if(iminLen <= 6 && imaxLen <= 6)
+			{
+				mvwprintw(win->labelwin, 0, 0, "%d", (int)dmax);
+				mvwprintw(win->labelwin, height-1, 0, "%d", (int)dmin);
+			}
+			else
+			{
+				mvwprintw(win->labelwin, 0, 0, "%1.5E", (double)dmax);
+				mvwprintw(win->labelwin, height-1, 0, "%1.5E", (double)dmin);
+			}
 		}
 	}
 }

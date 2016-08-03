@@ -10,7 +10,7 @@
 
 #define TITLE_LEN 100
 
-enum winType { VoidChart, PercentChart, ScaledValueChart, TextChart };
+enum winType { VoidChart, PercentChart, ScaledValueChart, TextChart, UpDownChart };
 
 struct initData;
 

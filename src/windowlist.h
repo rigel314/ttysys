@@ -57,8 +57,9 @@ struct bestPtr
 };
 
 void drawScreen(struct windowlist* win);
+int minMaxList(struct windowlist* win, float* omin, float* omax);
 void remapArrows(struct windowlist* wins, struct windowlist* win);
-struct GRect getContentFrame(struct windowlist* win);
+struct GRect getContentFrame(struct windowlist* win, struct GRect* labelFrame);
 void resizeWindowToFrame(struct windowlist* win);
 void splitV(struct windowlist* old);
 void splitH(struct windowlist* old);
