@@ -1,26 +1,31 @@
 ttysys v0.8
 ======
 
-##About:
+## About
 ttysys is a live ncurses cpu usage graph.
 The graph's units are in percentage.
 It updates once every second.
-###Screenshot:
+
+### Screenshot
 <a href="https://raw.github.com/rigel314/ttysys/26abbe0964db8f627d064974d4958542c10edd65/images/ttysys.png">![ttysys example](https://raw.github.com/rigel314/ttysys/26abbe0964db8f627d064974d4958542c10edd65/images/ttysysSmall.png)</a>
 
-##Build:
-	> make all
+## Build
+    $ sudo apt install libncurses5-dev
+    $ make all
+
+Build takes a dependency on `libncurses5-dev`. Simply `sudo apt install libncurses5-dev` for Debian/Ubuntu.
 A simple `make all` should suffice.  If you get errors using my makefile, see the Questions/Bugs section below.
 
-##Installation:
-	> make install
+## Installation
+    $ make install
 Running `make install` will copy the binary to `/usr/local/bin`.  This should be in your path.
-###Uninstallation:
-	> make uninstall
+
+### Uninstallation
+    $ make uninstall
 Running `make uninstall` will `rm /usr/local/bin/ttysys`.
 
-##Usage:
-	> ttysys [<sequence>]
+## Usage
+    $ ttysys [<sequence>]
 _sequence_ can consist of any number of the following characters:
 
 * `?` - Displays a help window.
@@ -41,19 +46,19 @@ _sequence_ can consist of any number of the following characters:
 
 These same buttons will control the program while it is running.
 
-##How it works:
-###CPU
+## How it works
+### CPU
 It works by reading the first few lines in `/proc/stat` that begin with cpu.<br />
 `man 5 proc` explains the meaning of the contents of `/proc/stat`.<br />
 These lines tell you how much time each CPU spent in different states.  The sum of each line is the total time spent for each CPU.  I read this file twice with a second in between.  Then, I subtract the two totals to have the total CPU time spent during my `sleep()`.  Now, I add the user and system numbers together and divide by my difference.  Finally, it's just a matter of displaying it nicely.
 
-###Memory
+### Memory
 To check the RAM and Swap, I read the appropriate lines in `/proc/meminfo`.  MemTotal, MemFree, Buffers, Cached, SwapTotal, and SwapFree are all the lines that ttysys reads.  MemFree + Buffers + Cached is the amount of free RAM usually reported by other tools, so I conformed.
 
-##Contributions:
+## Contributions
 I will be sticking to the branching model described [here](http://nvie.com/posts/a-successful-git-branching-model/).  Pull requests should also stick to this branching model.  Thanks.
 
-#Questions/Bugs?
+## Questions/Bugs?
 [Report A Bug](https://github.com/rigel314/ttysys/issues)<br />
 OR<br />
 Contact me at <pi.rubiks@gmail.com>
