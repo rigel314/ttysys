@@ -77,7 +77,7 @@ void drawScreen(struct windowlist* win)
 			dmax++;
 		}
 		
-		resizeWindowToFrame(win);
+		resizeWindowToFrame(win, true);
 		int* indexes = malloc(sizeof(int) * win->dataLen);
 		int width = win->dataLen;
 		int height = getContentFrame(win, NULL).size.height;
@@ -261,7 +261,7 @@ struct GRect getContentFrame(struct windowlist* win, struct GRect* labelFrame)
  * This resizes and moves all WINDOW*s to whatever win->frame and win->flags says it should be.
  * This also realloc()'s the data array for win.
  */
-void resizeWindowToFrame(struct windowlist* win)
+void resizeWindowToFrame(struct windowlist* win, bool clearContent)
 {
 	int diff;
 	int newLen;
@@ -279,7 +279,8 @@ void resizeWindowToFrame(struct windowlist* win)
 	// Clear so they won't leave garbage around.
 	wclear(win->titlewin);
 	wclear(win->labelwin);
-	wclear(win->contentwin);
+	if(clearContent)
+		wclear(win->contentwin);
 	
 	newLen = contentFrame.size.width;
 	diff = newLen - win->dataLen;
@@ -386,8 +387,8 @@ void splitV(struct windowlist* old)
 	new->frame.origin.y = old->frame.origin.y + old->frame.size.height + 1;
 	
 	// Make sure each window is properly resized to its new frame.
-	resizeWindowToFrame(old);
-	resizeWindowToFrame(new);
+	resizeWindowToFrame(old, true);
+	resizeWindowToFrame(new, true);
 	
 	// Draw a line for the new border.
 	printLine(borders, new->frame.origin.y - 1, new->frame.origin.x, HORIZ, new->frame.size.width);
@@ -429,8 +430,8 @@ void splitH(struct windowlist* old)
 	
 	new->frame.origin.x = old->frame.origin.x + old->frame.size.width + 1;
 	
-	resizeWindowToFrame(old);
-	resizeWindowToFrame(new);
+	resizeWindowToFrame(old, true);
+	resizeWindowToFrame(new, true);
 	
 	printLine(borders, new->frame.origin.y, new->frame.origin.x - 1, VERT, new->frame.size.height);
 }
@@ -556,7 +557,7 @@ void unSplit(struct windowlist** wins, struct windowlist** win)
 									dirs[choice]->frame.size.width,
 									dirs[choice]->frame.size.height + (*win)->frame.size.height + 1);
 	
-	resizeWindowToFrame(dirs[choice]);
+	resizeWindowToFrame(dirs[choice], true);
 	freeWin(wins, *win);
 	*win = dirs[choice]; // Change the pointed to struct windowlist*.
 }
@@ -807,7 +808,7 @@ int initializePlugin(struct windowlist* win, char* args)
 	{
 		win->type = id.type;
 		win->dataType = UserData;
-		resizeWindowToFrame(win);
+		resizeWindowToFrame(win, true);
 	}
 
 	free(argv);

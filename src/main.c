@@ -205,11 +205,11 @@ int main(int argc, char** argv)
 					break;
 				case 't':
 					focus->flags ^= wf_Title; // Toggle title
-					resizeWindowToFrame(focus);
+					resizeWindowToFrame(focus, true);
 					break;
 				case 'o':
 					focus->flags ^= wf_Label; // Toggle ordinate label
-					resizeWindowToFrame(focus);
+					resizeWindowToFrame(focus, true);
 					break;
 
 				case 'h': // horizontal split

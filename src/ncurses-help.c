@@ -36,7 +36,7 @@ struct windowlist* ncurses_init()
 	
 	// Add first window and setup internal WINDOW*s
 	struct windowlist* focus = addWin(&wins);
-	resizeWindowToFrame(focus);
+	resizeWindowToFrame(focus, true);
 	
 	// Make the borders WINDOW*
 	borders = newwin(LINES - 1, COLS, 0, 0);
