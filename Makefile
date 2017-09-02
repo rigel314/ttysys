@@ -3,9 +3,12 @@ CC = gcc
 LD = gcc
 
 #Flags
-options = -lncurses -lm -ldl -Wl,--dynamic-list=src/ttysys_export_list.txt
-#flags = -O2 --std=gnu99 -Wall
-flags = -O0 -ggdb3 --std=gnu99 -Wall
+ncurses_options := $(shell ncurses6-config --libs)
+options = ${ncurses_options} -lm -ldl -Wl,--dynamic-list=src/ttysys_export_list.txt
+
+ncurses_flags := $(shell ncurses6-config --cflags)
+#flags = ${ncurses_flags} -O2 --std=gnu99 -Wall
+flags = ${ncurses_flags} -O0 -ggdb3 --std=gnu99 -Wall
 
 # Build directories
 BUILD_DIR = build
