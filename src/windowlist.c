@@ -118,6 +118,17 @@ int minMaxList(struct windowlist* win, float* omin, float* omax)
 		dmin = min(dmin, win->data[win->dataLen-i-1]);
 		dmax = max(dmax, win->data[win->dataLen-i-1]);
 	}
+	
+	if(win->validDataLen == 0)
+	{
+		dmin = 0;
+		dmax = 0;
+	}
+	if(win->validDataLen == 1)
+	{
+		dmin = win->data[win->dataLen-1];
+		dmax = win->data[win->dataLen-1];
+	}
 
 	*omin = dmin;
 	*omax = dmax;
