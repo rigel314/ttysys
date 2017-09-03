@@ -276,11 +276,13 @@ void resizeWindowToFrame(struct windowlist* win, bool clearContent)
 	mvwin(win->titlewin, win->frame.origin.y, win->frame.origin.x);
 	mvwin(win->labelwin, labelFrame.origin.y, labelFrame.origin.x);
 	mvwin(win->contentwin, contentFrame.origin.y, contentFrame.origin.x);
+
 	// Clear so they won't leave garbage around.
-	wclear(win->titlewin);
-	wclear(win->labelwin);
+	werase(win->titlewin);
+	werase(win->labelwin);
+
 	if(clearContent)
-		wclear(win->contentwin);
+		werase(win->contentwin);
 	
 	newLen = contentFrame.size.width;
 	diff = newLen - win->dataLen;
@@ -570,8 +572,8 @@ void unSplit(struct windowlist** wins, struct windowlist** win)
  */
 void refreshAll(struct windowlist* wins, struct windowlist* focus)
 {
-	wrefresh(borders);
-	wrefresh(status);
+	wnoutrefresh(borders);
+	wnoutrefresh(status);
 
 	LLforeach(struct windowlist*, ptr, wins)
 	{
@@ -612,7 +614,7 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 					int expon=3;
 					float x = ptr->maxVal;
 					
-					// Divide by multiples of 2^10 until we have a resonable number.
+					// Divide by multiples of 2^10 until we have a reasonable number.
 					// If it's an unreasonable number of GB, this program will not display correctly.
 					while(x / 1024.0 > 1 && expon < 9)
 					{
@@ -640,13 +642,15 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 		
 		// Only refesh WINDOW*s if they are in use.
 		if(ptr->flags & wf_Title)
-			wrefresh(ptr->titlewin);
+			wnoutrefresh(ptr->titlewin);
 		
 		if(ptr->flags & wf_Label)
-			wrefresh(ptr->labelwin);
+			wnoutrefresh(ptr->labelwin);
 		
-		wrefresh(ptr->contentwin);
+		wnoutrefresh(ptr->contentwin);
 	}
+	
+	doupdate();
 }
 
 /**
