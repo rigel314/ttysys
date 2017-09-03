@@ -221,6 +221,8 @@ int nextVal(void** context, float* outs)
 		cpu[i].user = (float) (cts[i].user - ctx->cpuTimesLast[i].user) / (float) numEvents * 100.0;
 		cpu[i].sys = (float) (cts[i].sys - ctx->cpuTimesLast[i].sys) / (float) numEvents * 100.0;
 		cpu[i].total = cpu[i].user + cpu[i].sys;
+		
+		ctx->cpuTimesLast[i] = cts[i];
 	}
 	
 	if(ctx->whichCPU >= 0)
