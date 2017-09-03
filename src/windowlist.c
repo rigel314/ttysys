@@ -713,7 +713,7 @@ struct windowlist* addWin(struct windowlist** wins)
 	if(!wins)
 		return NULL;
 	
-	new = malloc(sizeof(struct windowlist));
+	new = calloc(1, sizeof(struct windowlist));
 	if(!new)
 		return NULL;
 	
@@ -737,7 +737,14 @@ struct windowlist* addWin(struct windowlist** wins)
 	new->validDataLen = 0;
 	new->maxVal = 0;
 	new->refreshPrd = 0;
+	new->plgData.cleanUp = NULL;
+	new->plgData.nextValue = NULL;
+	new->plgData.status = initStatus_GeneralFailure;
+	new->plgData.type = VoidChart;
 	new->plgHandle = NULL;
+	new->lasttime.tv_sec = 0;
+	new->lasttime.tv_usec = 0;
+	new->freq = 0;
 	
 	if(!*wins)
 	{
