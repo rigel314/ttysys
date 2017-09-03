@@ -742,9 +742,11 @@ struct windowlist* addWin(struct windowlist** wins)
 	new->plgData.status = initStatus_GeneralFailure;
 	new->plgData.type = VoidChart;
 	new->plgHandle = NULL;
-	new->lasttime.tv_sec = 0;
-	new->lasttime.tv_usec = 0;
-	new->freq = 0;
+	#ifdef DEBUG
+		new->lasttime.tv_sec = 0;
+		new->lasttime.tv_usec = 0;
+		new->freq = 0;
+	#endif
 	
 	if(!*wins)
 	{

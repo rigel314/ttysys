@@ -48,8 +48,11 @@ struct windowlist
 	void* plgHandle;
 	struct initData plgData;
 	void* plgContext;
-	struct timeval lasttime;
-	float freq;
+	#ifdef DEBUG
+		struct timeval lasttime;
+		float freq;
+		float filtdata[4];
+	#endif
 };
 
 // Used in determining arrow key mapping.

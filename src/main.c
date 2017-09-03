@@ -71,15 +71,19 @@ int main(int argc, char** argv)
 				if(ptr->refreshPrd && ptr->plgHandle && !(itimerCount % ptr->refreshPrd))
 				{ // itimerCount % ptr->refreshPrd is 0 when this window should be refreshed
 					shouldRefresh = true;
-					dlerror();
-					nextValueFunc* funcptr = dlsym(ptr->plgHandle, "nextVal");
-					if(!dlerror())
+					nextValueFunc* funcptr = ptr->plgData.nextValue;
+					if(funcptr)
 					{
 						float out[2] = {0};
 						#ifdef DEBUG
 							struct timeval tv;
 							gettimeofday(&tv, NULL);
-							ptr->freq = 1/((tv.tv_sec+(double)tv.tv_usec/1000000.0) - (ptr->lasttime.tv_sec+(double)ptr->lasttime.tv_usec/1000000.0));
+							double thisfreq = 1/((tv.tv_sec+(double)tv.tv_usec/1000000.0) - (ptr->lasttime.tv_sec+(double)ptr->lasttime.tv_usec/1000000.0));
+							ptr->freq = .0025*ptr->filtdata[0] + .005*ptr->filtdata[1] + .0025*thisfreq - .81*ptr->filtdata[2] + 1.8*ptr->filtdata[3];
+							ptr->filtdata[0] = ptr->filtdata[1];
+							ptr->filtdata[1] = thisfreq;
+							ptr->filtdata[2] = ptr->filtdata[3];
+							ptr->filtdata[3] = ptr->freq;
 							ptr->lasttime = tv;
 						#endif
 						funcptr(&(ptr->plgContext),out); // Call the nextValue function
