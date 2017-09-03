@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <dlfcn.h>
+#include <sys/time.h>
 #include "windowlist.h"
 #include "ncurses-help.h"
 #include "common.h"
@@ -75,6 +76,12 @@ int main(int argc, char** argv)
 					if(!dlerror())
 					{
 						float out[2] = {0};
+						#ifdef DEBUG
+							struct timeval tv;
+							gettimeofday(&tv, NULL);
+							ptr->freq = 1/((tv.tv_sec+(double)tv.tv_usec/1000000.0) - (ptr->lasttime.tv_sec+(double)ptr->lasttime.tv_usec/1000000.0));
+							ptr->lasttime = tv;
+						#endif
 						funcptr(&(ptr->plgContext),out); // Call the nextValue function
 						listShiftLeftAdd(ptr->data, ptr->dataLen, out[0]);
 						ptr->validDataLen = (ptr->validDataLen < ptr->dataLen) ? ptr->validDataLen+1 : ptr->dataLen;

@@ -636,6 +636,10 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 					snprintf(ptr->title + strlen(ptr->title), 39-strlen(ptr->title), " of %.2f %ciB", x, 'A' + (-4*expon*expon/9+14*expon/3));
 					// "RAM - 17.26% of 3.86 GiB"
 				}
+				
+				#ifdef DEBUG
+					sprintf(ptr->title + strlen(ptr->title), "(%.2fHz)", ptr->freq);
+				#endif
 			}
 			
 			// Pad the rest of title with spaces to be written over anything that got shorter.

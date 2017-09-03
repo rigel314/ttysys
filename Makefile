@@ -8,7 +8,7 @@ options = ${ncurses_options} -lm -ldl -Wl,--dynamic-list=src/ttysys_export_list.
 
 ncurses_flags := $(shell ncurses6-config --cflags)
 #flags = ${ncurses_flags} -O2 --std=gnu99 -Wall
-flags = ${ncurses_flags} -O0 -ggdb3 --std=gnu99 -Wall
+flags = ${ncurses_flags} -O0 -ggdb3 --std=gnu99 -Wall -DDEBUG
 
 # Build directories
 BUILD_DIR = build
