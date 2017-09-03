@@ -835,6 +835,7 @@ int initializePlugin(struct windowlist* win, char* args)
 		win->type = id.type;
 		win->dataType = UserData;
 		resizeWindowToFrame(win, true);
+		win->plgData = id;
 	}
 
 	free(argv);
