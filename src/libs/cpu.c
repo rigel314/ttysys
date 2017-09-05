@@ -35,7 +35,7 @@ int getNumCPUs()
 {
 	FILE* fp;
 	char* line = NULL;
-	size_t dum;
+	size_t dum = 0;
 	ssize_t err;
 	int count = 0;
 	
@@ -126,7 +126,7 @@ int readCPUs(int numCPUs, struct cpuTime* now)
 {
 	FILE* fp;
 	char* line = NULL;
-	size_t dum;
+	size_t dum = 0;
 	ssize_t len;
 	int i;
 	
