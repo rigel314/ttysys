@@ -10,6 +10,9 @@
 
 #define TITLE_LEN 100
 
+// Timer frequency of internal timer.  Max update frequency for windows.
+#define TIMER_FREQ 10 // Hz
+
 enum winType { VoidChart, PercentChart, ScaledValueChart, TextChart, UpDownChart };
 
 struct initData;
