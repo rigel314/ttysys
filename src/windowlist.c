@@ -105,7 +105,61 @@ void drawScreen(struct windowlist* win)
 		
 		free(indexes);
 	}
-	
+	else if(win->type == UpDownChart)
+	{
+		float dmin, dmax;
+		
+		minMaxList(win, &dmin, &dmax);
+		
+		if(dmin == dmax)
+		{
+			dmin--;
+			dmax++;
+		}
+		
+		resizeWindowToFrame(win, true);
+		int* indexes = malloc(sizeof(int) * win->dataLen);
+		int width = win->dataLen;
+		int height = getContentFrame(win, NULL).size.height;
+		
+		for(int i = 0; i < width; i++)
+		{
+			// Calculate the row for each data point.
+			indexes[i] = roundf((float) height/2.0f - (float) height/2.0f * win->data[i]/dmax);
+			
+			// Print either a space or an ACS_PLUS in each row.
+			// Only the differences will be actually be printed when the refresh() occurs.
+			for(int j = 0; j < height/2; j++)
+			{
+				if(j >= indexes[i])
+					mvwaddch(win->contentwin, j, i, PLOT_CHAR);
+				else
+					mvwaddch(win->contentwin, j, i, ' ');
+			}
+
+			// Calculate the row for each data point.
+			indexes[i] = roundf((float) height/2.0f + (float) height/2.0f * win->data[i]/dmax);
+			
+			// Print either a space or an ACS_PLUS in each row.
+			// Only the differences will be actually be printed when the refresh() occurs.
+			for(int j = height/2+1; j < height; j++)
+			{
+				if(j < indexes[i])
+					mvwaddch(win->contentwin, j, i, PLOT_CHAR);
+				else
+					mvwaddch(win->contentwin, j, i, ' ');
+			}
+
+			if(win->flags & wf_Grid)
+			{
+				wattron(win->contentwin, COLOR_PAIR(1));
+				mvwaddch(win->contentwin, height/2, i, ACS_HLINE); // Draw a line.
+				wattroff(win->contentwin, COLOR_PAIR(1));
+			}
+		}
+		
+		free(indexes);
+	}
 }
 
 int minMaxList(struct windowlist* win, float* omin, float* omax)
@@ -254,6 +308,12 @@ struct GRect getContentFrame(struct windowlist* win, struct GRect* labelFrame)
 				size = 13;
 			}
 		}
+
+		if(win->type == UpDownChart)
+		{
+			;
+		}
+		
 		frame.origin.x += size;
 		frame.size.width -= size;
 		
@@ -358,6 +418,11 @@ void resizeWindowToFrame(struct windowlist* win, bool clearContent)
 				mvwprintw(win->labelwin, 0, 0, "%1.5E", (double)dmax);
 				mvwprintw(win->labelwin, height-1, 0, "%1.5E", (double)dmin);
 			}
+		}
+
+		if(win->type == UpDownChart)
+		{
+			;
 		}
 	}
 }
