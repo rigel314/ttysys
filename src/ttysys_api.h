@@ -21,8 +21,9 @@ struct initData;
 typedef struct initData (initFunc)(void** context, int argc, char** argv);
 struct initData init(void** context, int argc, char** argv);
 
+#define MAX_OUTPUT_WIDTH 2
 // You must have a function that matches this signature
-typedef int (nextValueFunc)(void** context, float* vals);
+typedef int (nextValueFunc)(void** context, float vals[MAX_OUTPUT_WIDTH]);
 
 // You may define a function to cleanup anything that needs cleaned when properly exiting.
 typedef void (cleanupFunc)(void** context);

@@ -42,7 +42,7 @@ struct windowlist
 	struct GRect frame;
 	enum winDataType dataType;
 	int dataSource;
-	float* data;
+	float* data[MAX_OUTPUT_WIDTH];
 	int dataLen;
 	int validDataLen;
 	float maxVal;
@@ -65,7 +65,7 @@ struct bestPtr
 };
 
 void drawScreen(struct windowlist* win);
-int minMaxList(struct windowlist* win, float* omin, float* omax);
+int minMaxList(struct windowlist* win, int index, float* omin, float* omax);
 void remapArrows(struct windowlist* wins, struct windowlist* win);
 struct GRect getContentFrame(struct windowlist* win, struct GRect* labelFrame);
 void resizeWindowToFrame(struct windowlist* win, bool clearContent);

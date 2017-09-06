@@ -87,7 +87,8 @@ int main(int argc, char** argv)
 							ptr->lasttime = tv;
 						#endif
 						funcptr(&(ptr->plgContext),out); // Call the nextValue function
-						listShiftLeftAdd(ptr->data, ptr->dataLen, out[0]);
+						listShiftLeftAdd(ptr->data[0], ptr->dataLen, out[0]);
+						listShiftLeftAdd(ptr->data[1], ptr->dataLen, out[1]);
 						ptr->validDataLen = (ptr->validDataLen < ptr->dataLen) ? ptr->validDataLen+1 : ptr->dataLen;
 					}
 				}

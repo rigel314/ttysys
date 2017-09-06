@@ -37,7 +37,7 @@ void drawScreen(struct windowlist* win)
 		for(int i = 0; i < width; i++)
 		{
 			// Calculate the row for each data point.
-			indexes[i] = roundf((float) height - (float) height * win->data[i]/100.0);
+			indexes[i] = roundf((float) height - (float) height * win->data[0][i]/100.0);
 			
 			// Print either a space or an ACS_PLUS in each row.
 			// Only the differences will be actually be printed when the refresh() occurs.
@@ -69,7 +69,7 @@ void drawScreen(struct windowlist* win)
 	{
 		float dmin, dmax;
 		
-		minMaxList(win, &dmin, &dmax);
+		minMaxList(win, 0, &dmin, &dmax);
 		
 		if(dmin == dmax)
 		{
@@ -85,7 +85,7 @@ void drawScreen(struct windowlist* win)
 		for(int i = 0; i < width; i++)
 		{
 			// Calculate the row for each data point.
-			indexes[i] = roundf((float) height - (float) height * (win->data[i]-dmin)/(dmax-dmin));
+			indexes[i] = roundf((float) height - (float) height * (win->data[0][i]-dmin)/(dmax-dmin));
 			
 			// Print either a space or an ACS_PLUS in each row.
 			// Only the differences will be actually be printed when the refresh() occurs.
@@ -109,7 +109,7 @@ void drawScreen(struct windowlist* win)
 	{
 		float dmin, dmax;
 		
-		minMaxList(win, &dmin, &dmax);
+		minMaxList(win, 0, &dmin, &dmax);
 		
 		if(dmin == dmax)
 		{
@@ -125,7 +125,7 @@ void drawScreen(struct windowlist* win)
 		for(int i = 0; i < width; i++)
 		{
 			// Calculate the row for each data point.
-			indexes[i] = roundf((float) height/2.0f - (float) height/2.0f * win->data[i]/dmax);
+			indexes[i] = roundf((float) height/2.0f - (float) height/2.0f * win->data[0][i]/dmax);
 			
 			// Print either a space or an ACS_PLUS in each row.
 			// Only the differences will be actually be printed when the refresh() occurs.
@@ -138,7 +138,7 @@ void drawScreen(struct windowlist* win)
 			}
 
 			// Calculate the row for each data point.
-			indexes[i] = roundf((float) height/2.0f + (float) height/2.0f * win->data[i]/dmax);
+			indexes[i] = roundf((float) height/2.0f + (float) height/2.0f * win->data[1][i]/dmax);
 			
 			// Print either a space or an ACS_PLUS in each row.
 			// Only the differences will be actually be printed when the refresh() occurs.
@@ -162,15 +162,15 @@ void drawScreen(struct windowlist* win)
 	}
 }
 
-int minMaxList(struct windowlist* win, float* omin, float* omax)
+int minMaxList(struct windowlist* win, int index, float* omin, float* omax)
 {
 	float dmin = FLT_MAX;
 	float dmax = -FLT_MAX;
 	
 	for(int i=0; i < win->validDataLen; i++)
 	{
-		dmin = min(dmin, win->data[win->dataLen-i-1]);
-		dmax = max(dmax, win->data[win->dataLen-i-1]);
+		dmin = min(dmin, win->data[index][win->dataLen-i-1]);
+		dmax = max(dmax, win->data[index][win->dataLen-i-1]);
 	}
 	
 	if(win->validDataLen == 0)
@@ -180,8 +180,8 @@ int minMaxList(struct windowlist* win, float* omin, float* omax)
 	}
 	if(win->validDataLen == 1)
 	{
-		dmin = win->data[win->dataLen-1];
-		dmax = win->data[win->dataLen-1];
+		dmin = win->data[index][win->dataLen-1];
+		dmax = win->data[index][win->dataLen-1];
 	}
 
 	*omin = dmin;
@@ -291,7 +291,7 @@ struct GRect getContentFrame(struct windowlist* win, struct GRect* labelFrame)
 		if(win->type == ScaledValueChart)
 		{
 			float dmin, dmax;
-			minMaxList(win, &dmin, &dmax);
+			minMaxList(win, 0, &dmin, &dmax);
 
 			int iminLen = snprintf(NULL, 0, "%d", (int)dmin);
 			int imaxLen = snprintf(NULL, 0, "%d", (int)dmax);
@@ -362,7 +362,8 @@ void resizeWindowToFrame(struct windowlist* win, bool clearContent)
 	if(win->dataLen == 0)
 	{
 		diff = 0;
-		win->data = calloc(newLen, sizeof(float));
+		win->data[0] = calloc(newLen, sizeof(float));
+		win->data[1] = calloc(newLen, sizeof(float));
 		win->validDataLen = 0;
 	}
 	
@@ -370,17 +371,24 @@ void resizeWindowToFrame(struct windowlist* win, bool clearContent)
 	if(diff < 0)
 	{
 		for(int i = 0; i < abs(diff); i++)
-			listShiftLeftAdd(win->data, win->dataLen, 0);
+		{
+			listShiftLeftAdd(win->data[0], win->dataLen, 0);
+			listShiftLeftAdd(win->data[1], win->dataLen, 0);
+		}
 		win->validDataLen = max(0,win->validDataLen+diff);
 	}
 	
 	win->dataLen = newLen;
-	win->data = realloc(win->data, sizeof(float) * newLen);
+	win->data[0] = realloc(win->data[0], sizeof(float) * newLen);
+	win->data[1] = realloc(win->data[1], sizeof(float) * newLen);
 	
 	// A positive diff means data got bigger.  realloc() gave us more space, so we need to shift all the data to the end now.
 	if(diff > 0)
 		for(int i = 0; i < diff; i++)
-			listShiftRightAdd(win->data, win->dataLen, 0);
+		{
+			listShiftRightAdd(win->data[0], win->dataLen, 0);
+			listShiftRightAdd(win->data[1], win->dataLen, 0);
+		}
 	
 	// Print 25%, 50%, and 75%.
 	if(win->flags & wf_Label)
@@ -403,7 +411,7 @@ void resizeWindowToFrame(struct windowlist* win, bool clearContent)
 		if(win->type == ScaledValueChart)
 		{
 			float dmin, dmax;
-			minMaxList(win, &dmin, &dmax);
+			minMaxList(win, 0, &dmin, &dmax);
 			
 			int iminLen = snprintf(NULL, 0, "%d", (int)dmin);
 			int imaxLen = snprintf(NULL, 0, "%d", (int)dmax);
@@ -683,7 +691,7 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 			if((ptr->flags & wf_ExpandedTitle) && ptr->dataType != VoidData)
 			{
 				strcat(ptr->title, " - ");
-				sprintf(ptr->title + strlen(ptr->title), "%.2f%%", ptr->data[ptr->dataLen-1]); // "CPU Summary - 17.26%"
+				sprintf(ptr->title + strlen(ptr->title), "%.2f%%", ptr->data[0][ptr->dataLen-1]); // "CPU Summary - 17.26%"
 				
 				if((ptr->flags & wf_ShowMax) && ptr->dataType == MemData)
 				{
@@ -797,7 +805,8 @@ struct windowlist* addWin(struct windowlist** wins)
 	new->frame = GRect(1, 1, COLS - 2, LINES - 3);
 	new->dataType = VoidData;
 	new->dataSource = 0;
-	new->data = NULL;
+	new->data[0] = NULL;
+	new->data[1] = NULL;
 	new->dataLen = 0;
 	new->validDataLen = 0;
 	new->maxVal = 0;
@@ -957,7 +966,8 @@ void freeWin(struct windowlist** wins, struct windowlist* win)
 	delwin(win->labelwin);
 	delwin(win->titlewin);
 	// free struct members that matter.
-	free(win->data);
+	free(win->data[0]);
+	free(win->data[1]);
 	if(win->plgHandle)
 		free(win->plgHandle);
 	free(win);
