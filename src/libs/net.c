@@ -15,24 +15,26 @@
 void printTitle(char* iface)
 {
 	int x = strlen(iface);
-	char msg[IFACE_LEN+10];
+	char msg[IFACE_LEN+100];
 	
 	strcpy(msg, iface);
 	
 	if(x == 0)
 	{
-		setTitle("All  Ifaces");
+		strcpy(msg, "All  Ifaces");
 	}
 	else if(msg[x-1] == ':')
 	{
 		msg[x-1] = '\0';
-		setTitle(msg);
 	}
 	else
 	{
 		strcat(msg, "*");
-		setTitle(msg);
 	}
+
+	strcat(msg, " KiB/s");
+	
+	setTitle(msg);
 }
 
 int readNets(unsigned long long* rx, unsigned long long* tx, const struct netinfo* ni)
@@ -101,6 +103,8 @@ int readNets(unsigned long long* rx, unsigned long long* tx, const struct netinf
 		line = NULL;
 	}
 	
+	fclose(fp);
+	
 	return 1;
 }
 
@@ -111,21 +115,23 @@ int nextVal(void** context, float* outs)
 	
 	readNets(&rx, &tx, ni);
 	
+	printTitle(ni->iface);
+	
 	if(!ni->valid)
 	{
 		ni->valid = true;
 		outs[0] = outs[1] = 0;
+		ni->last.rbytes = rx;
+		ni->last.tbytes = tx;
 		return 0;
 	}
 	
-	float div = getRefreshRate() / ((float)TIMER_FREQ);
-	outs[0] = (float)(tx - ni->last.tbytes) / div;
-	outs[1] = (float)(tx - ni->last.tbytes) / div;
+	float div = getRefreshRate() / ((float)TIMER_FREQ) * 1024.0f;
+	outs[0] = ((float)(tx - ni->last.tbytes)) / div;
+	outs[1] = ((float)(rx - ni->last.rbytes)) / div;
 	
 	ni->last.rbytes = rx;
 	ni->last.tbytes = tx;
-	
-	printTitle(ni->iface);
 	
 	return 0;
 }
@@ -148,7 +154,7 @@ struct initData init(void** context, int argc, char** argv)
 	
 	if(argc == 2)
 	{
-		strncpy(ni->iface, argv[2], IFACE_LEN-1);
+		strncpy(ni->iface, argv[1], IFACE_LEN-1);
 	}
 	else if(argc > 2)
 	{
@@ -162,7 +168,6 @@ struct initData init(void** context, int argc, char** argv)
 	id.nextValue = &nextVal;
 	id.cleanUp = &destroy;
 	id.type = UpDownChart;
-	id.type = ScaledValueChart;
 	
 	return id;
 }
