@@ -13,6 +13,8 @@
 #include <ncurses.h>
 #include <time.h>
 
+#define PLOT_CHAR ACS_PLUS
+
 // window information.
 enum winFlags { wf_Title = 1, wf_Label = 1<<1, wf_Grid = 1<<2, wf_ExpandedTitle = 1<<3, wf_ShowMax = 1<<4, wf_Border = 1<<5 };
 enum winDataType { VoidData, CPUData, MemData, NetData, UserData };
