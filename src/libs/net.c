@@ -15,7 +15,7 @@
 void printTitle(char* iface)
 {
 	int x = strlen(iface);
-	char msg[IFACE_LEN+100];
+	char msg[TITLE_LEN];
 	
 	strcpy(msg, iface);
 	
