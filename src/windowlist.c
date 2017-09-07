@@ -107,14 +107,22 @@ void drawScreen(struct windowlist* win)
 	}
 	else if(win->type == UpDownChart)
 	{
-		float dmin, dmax;
+		float d0min, d0max, d1min, d1max;
 		
-		minMaxList(win, 0, &dmin, &dmax);
+		minMaxList(win, 0, &d0min, &d0max);
 		
-		if(dmin == dmax)
+		if(d0min == d0max)
 		{
-			dmin--;
-			dmax++;
+			d0min--;
+			d0max++;
+		}
+		
+		minMaxList(win, 1, &d1min, &d1max);
+		
+		if(d1min == d1max)
+		{
+			d1min--;
+			d1max++;
 		}
 		
 		resizeWindowToFrame(win, true);
@@ -125,7 +133,7 @@ void drawScreen(struct windowlist* win)
 		for(int i = 0; i < width; i++)
 		{
 			// Calculate the row for each data point.
-			indexes[i] = roundf((float) height/2.0f - (float) height/2.0f * win->data[0][i]/dmax);
+			indexes[i] = roundf((float) height/2.0f - (float) height/2.0f * win->data[0][i]/d0max);
 			
 			// Print either a space or an ACS_PLUS in each row.
 			// Only the differences will be actually be printed when the refresh() occurs.
@@ -138,7 +146,7 @@ void drawScreen(struct windowlist* win)
 			}
 
 			// Calculate the row for each data point.
-			indexes[i] = roundf((float) height/2.0f + (float) height/2.0f * win->data[1][i]/dmax);
+			indexes[i] = roundf((float) height/2.0f + (float) height/2.0f * win->data[1][i]/d1max);
 			
 			// Print either a space or an ACS_PLUS in each row.
 			// Only the differences will be actually be printed when the refresh() occurs.
