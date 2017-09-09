@@ -319,7 +319,15 @@ struct GRect getContentFrame(struct windowlist* win, struct GRect* labelFrame)
 
 		if(win->type == UpDownChart)
 		{
-			;
+			float d0min, d0max, d1min, d1max;
+			
+			minMaxList(win, 0, &d0min, &d0max);
+			minMaxList(win, 1, &d1min, &d1max);
+			
+			int upmaxLen = snprintf(NULL, 0, "%.2f", (double)d0max);
+			int dnmaxLen = snprintf(NULL, 0, "%.2f", (double)d1max);
+			
+			size = max(upmaxLen, dnmaxLen);
 		}
 		
 		frame.origin.x += size;
@@ -438,7 +446,14 @@ void resizeWindowToFrame(struct windowlist* win, bool clearContent)
 
 		if(win->type == UpDownChart)
 		{
-			;
+			float d0min, d0max, d1min, d1max;
+			
+			minMaxList(win, 0, &d0min, &d0max);
+			minMaxList(win, 1, &d1min, &d1max);
+			
+			mvwprintw(win->labelwin, 0, 0, "%.2f", (double)d0max);
+			mvwprintw(win->labelwin, height-1, 0, "%.2f", (double)d1max);
+			mvwprintw(win->labelwin, height/2, 0, "0");
 		}
 	}
 }
