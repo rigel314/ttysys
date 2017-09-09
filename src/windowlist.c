@@ -992,6 +992,6 @@ void freeWin(struct windowlist** wins, struct windowlist* win)
 	free(win->data[0]);
 	free(win->data[1]);
 	if(win->plgHandle)
-		free(win->plgHandle);
+		cleanupPlugin(win);
 	free(win);
 }
