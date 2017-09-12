@@ -5,14 +5,25 @@
  *      Author: cody
  *
  *	TODO:
- *		Make command entry cooler.
- *		make more plugins
  *		make the api cooler
- *		actually use the api
- *		New input method. + New help window.
- *		CLI args for default startup.
- *		Corners in the border.
- *		Resizeability.
+ *			add elapsed time api call
+ *		make more plugins
+ *			(gnu watch)-like
+ *		startup CLI args
+ *		Fix titles
+ *			length
+ *			per chart type format
+ *		Make command entry cooler
+ *			show errors on plugin load
+ *		New help window.
+ *			show help in voiddata
+ *		Do something about close window prompt
+ *			maybe use the command line, emacs-style?
+ *		
+ *		Next version:
+ *			default startup file
+ *			Corners in the border
+ *			Resizeability
  */
 
 #include <ncurses.h>
