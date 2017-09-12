@@ -751,7 +751,7 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 				wattroff(ptr->titlewin, COLOR_PAIR(2));
 		}
 		
-		// Only refesh WINDOW*s if they are in use.
+		// Only refresh WINDOW*s if they are in use.
 		if(ptr->flags & wf_Title)
 			wnoutrefresh(ptr->titlewin);
 		
