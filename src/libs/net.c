@@ -127,8 +127,25 @@ int nextVal(void** context, float* outs)
 	}
 	
 	float div = getRefreshRate() / ((float)TIMER_FREQ) * 1024.0f;
-	outs[0] = ((float)(tx - ni->last.tbytes)) / div;
-	outs[1] = ((float)(rx - ni->last.rbytes)) / div;
+	float x;
+	
+	x = max(((float)(tx - ni->last.tbytes)) / div, 0);
+	outs[0] = max(0.476190 * (ni->filtx[0][0] + x) + 0.047660 * ni->filty[0][0] - 0.167014 * ni->filty[0][1] + 0.328059 * ni->filty[0][2] - 0.46875 * ni->filty[0][3] + 0.305 * ni->filty[0][4], 0);
+	ni->filtx[0][0] = x;
+	ni->filty[0][0] = ni->filty[0][1];
+	ni->filty[0][1] = ni->filty[0][2];
+	ni->filty[0][2] = ni->filty[0][3];
+	ni->filty[0][3] = ni->filty[0][4];
+	ni->filty[0][4] = outs[0];
+
+	x = max(((float)(rx - ni->last.rbytes)) / div, 0);
+	outs[1] = max(0.476190 * (ni->filtx[1][0] + x) + 0.047660 * ni->filty[1][0] - 0.167014 * ni->filty[1][1] + 0.328059 * ni->filty[1][2] - 0.46875 * ni->filty[1][3] + 0.305 * ni->filty[1][4], 0);
+	ni->filtx[1][0] = x;
+	ni->filty[1][0] = ni->filty[1][1];
+	ni->filty[1][1] = ni->filty[1][2];
+	ni->filty[1][2] = ni->filty[1][3];
+	ni->filty[1][3] = ni->filty[1][4];
+	ni->filty[1][4] = outs[1];
 	
 	ni->last.rbytes = rx;
 	ni->last.tbytes = tx;

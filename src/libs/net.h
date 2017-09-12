@@ -28,6 +28,8 @@ struct netinfo
 	int tbytescol;
 	bool valid;
 	char iface[IFACE_LEN];
+	float filtx[2][1];
+	float filty[2][5];
 };
 
 #endif /* SRC_LIBS_NET_H_ */
