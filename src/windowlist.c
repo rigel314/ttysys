@@ -168,6 +168,11 @@ void drawScreen(struct windowlist* win)
 		
 		free(indexes);
 	}
+	else if(win->type == TextChart)
+	{
+//		werase(win->contentwin);
+//		mvwprintw(win->contentwin, 0, 0, "%s", "test");
+	}
 }
 
 int minMaxList(struct windowlist* win, int index, float* omin, float* omax)
@@ -695,7 +700,7 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 			if(ptr == focus)
 				wattron(ptr->titlewin, COLOR_PAIR(2));
 			
-			if(ptr->dataType == CPUData)
+			/*if(ptr->dataType == CPUData)
 			{
 				strcpy(ptr->title, "CPU ");
 				if(ptr->dataSource == 0)
@@ -710,7 +715,7 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 				else
 					strcpy(ptr->title, "Swap"); // "Swap"
 			}
-			else if(ptr->dataType == VoidData)
+			else */if(ptr->dataType == VoidData)
 			{
 				strcpy(titleTmp,"(VoidData)");
 			}
