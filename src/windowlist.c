@@ -687,6 +687,10 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 		// Only do title related stuff if wf_Title is set.
 		if(ptr->flags & wf_Title)
 		{
+			char titleTmp[TITLE_LEN];
+			
+			strcpy(titleTmp, ptr->title);
+			
 			// Turn on color for the focused window.
 			if(ptr == focus)
 				wattron(ptr->titlewin, COLOR_PAIR(2));
@@ -708,13 +712,13 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 			}
 			else if(ptr->dataType == VoidData)
 			{
-				strcpy(ptr->title,"(VoidData)");
+				strcpy(titleTmp,"(VoidData)");
 			}
 			
 			if((ptr->flags & wf_ExpandedTitle) && ptr->dataType != VoidData)
 			{
-				strcat(ptr->title, " - ");
-				sprintf(ptr->title + strlen(ptr->title), "%.2f%%", ptr->data[0][ptr->dataLen-1]); // "CPU Summary - 17.26%"
+				strcat(titleTmp, " - ");
+				sprintf(titleTmp + strlen(titleTmp), "%.2f%%", ptr->data[0][ptr->dataLen-1]); // "CPU Summary - 17.26%"
 				
 				if((ptr->flags & wf_ShowMax) && ptr->dataType == MemData)
 				{
@@ -729,22 +733,22 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 						expon += 3;
 					}
 					// I used an interpolation function to map 3 -> K, 6 -> M, and 9 -> G.
-					snprintf(ptr->title + strlen(ptr->title), 39-strlen(ptr->title), " of %.2f %ciB", x, 'A' + (-4*expon*expon/9+14*expon/3));
+					snprintf(titleTmp + strlen(titleTmp), 39-strlen(titleTmp), " of %.2f %ciB", x, 'A' + (-4*expon*expon/9+14*expon/3));
 					// "RAM - 17.26% of 3.86 GiB"
 				}
 				
 				#ifdef DEBUG
-					sprintf(ptr->title + strlen(ptr->title), "(%.2fHz)", ptr->freq);
+					sprintf(titleTmp + strlen(titleTmp), "(%.2fHz)", ptr->freq);
 				#endif
 			}
 			
 			// Pad the rest of title with spaces to be written over anything that got shorter.
-			for(int i = strlen(ptr->title); i < 39; i++)
-				ptr->title[i] = ' ';
-			ptr->title[39] = '\0'; // Null terminate title.
+			for(int i = strlen(titleTmp); i < 39; i++)
+				titleTmp[i] = ' ';
+			titleTmp[39] = '\0'; // Null terminate title.
 			
 			// Actually print title. (not actually, just schedule it for the next refresh() call.)
-			mvwaddstr(ptr->titlewin, 0, 3, ptr->title);
+			mvwaddstr(ptr->titlewin, 0, 3, titleTmp);
 			
 			// Turn off color if it was on.
 			if(ptr == focus)
