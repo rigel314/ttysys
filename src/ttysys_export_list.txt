@@ -3,5 +3,6 @@
     {
        setTitle;
        getRefreshRate;
+       setText;
     };
 };

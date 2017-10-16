@@ -12,10 +12,20 @@
 
 extern struct windowlist* plgWin;
 
+// Remember, any functions added below must be added to the ttysys_export_list.txt file
+
 void setTitle(char* title)
 {
-//	mvwprintw(focus->titlewin,0,0,test);
 	strncpy(plgWin->title, title, TITLE_LEN);
+}
+
+void setText(char* text)
+{
+	if(plgWin->type == TextChart)
+	{
+		werase(plgWin->contentwin);
+		mvwprintw(plgWin->contentwin,0,0,"%s", text);
+	}
 }
 
 int getRefreshRate()

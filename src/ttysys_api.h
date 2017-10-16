@@ -26,6 +26,8 @@ struct initData init(void** context, int argc, char** argv);
 typedef int (nextValueFunc)(void** context, float vals[MAX_OUTPUT_WIDTH]);
 
 // You may define a function to cleanup anything that needs cleaned when properly exiting.
+// If this function is defined, it will always be called before unloading the plugin.
+//   (This means when the user closes your plugin OR if init returns error.)
 typedef void (cleanupFunc)(void** context);
 
 enum initStatus {initStatus_Success, initStatus_ArgFailure, initStatus_GeneralFailure = 255};
@@ -40,8 +42,12 @@ struct initData
 };
 
 // You can call this during any of your functions to set the title of the window your function is called for. 
-extern void setTitle(char* test);
+extern void setTitle(char* title);
 
+// When init has returned type=TextChart, you can call this during any of your functions to set the text in your window
+extern void setText(char* text);
+
+// You can call this during any of your functions to get the period specified by the user.
 extern int getRefreshRate();
 
 #endif /* SRC_TTYSYS_API_H_ */
