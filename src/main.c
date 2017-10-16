@@ -15,10 +15,13 @@
  *			per chart type format
  *		Make command entry cooler
  *			show errors on plugin load
+ *			support escaping special chars
  *		New help window.
  *			show help in voiddata
  *		Do something about close window prompt
  *			maybe use the command line, emacs-style?
+ *		Cleanup plugin window when changing plugin and new plugin fails init.
+ *			maybe set back to void data?
  *		
  *		Next version:
  *			default startup file
@@ -171,6 +174,7 @@ int main(int argc, char** argv)
 				char args[sizeof(cmdStr)] = "";
 				int ret;
 				
+				// TODO: support embedded parens
 				ret = sscanf(cmdStr, "%d %[^( ](%[^)])", &timePrd, (char*)&name, (char*)&args);
 				
 				if(ret > 1)
@@ -186,11 +190,8 @@ int main(int argc, char** argv)
 					focus->plgHandle = dlopen(dlName, RTLD_LAZY);
 					if(focus->plgHandle)
 					{
-						if(!initializePlugin(focus, args))
-						{
-							focus->refreshPrd = timePrd;
-						}
-						else
+						focus->refreshPrd = timePrd;
+						if(initializePlugin(focus, args))
 						{
 							cleanupPlugin(focus);
 						}
