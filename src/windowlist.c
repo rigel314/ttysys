@@ -889,6 +889,7 @@ int initializePlugin(struct windowlist* win, char* args)
 		{
 			args[i] = '\0';
 			flag = false;
+			argc++;
 		}
 		
 		if(args[i] == ' ' && !flag)
@@ -902,10 +903,10 @@ int initializePlugin(struct windowlist* win, char* args)
 			args[i] = '\0';
 			argc++;
 		}
-		if(args[i] == '\0')
-		{
-			argc++;
-		}
+//		if(args[i] == '\0')
+//		{
+//			argc++;
+//		}
 	}
 	
 	argc++;
