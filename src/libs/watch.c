@@ -10,20 +10,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/wait.h>
+#include <sys/time.h>
 #include <errno.h>
+#include <signal.h>
+#include <stdbool.h>
 #include "watch.h"
+
+#define BUFSIZE 65536
+#define TIMEOUT .5
 
 int nextVal(void** context, float* outs)
 {
 	int fds[2];
-	static char buf[65536];
-	int sret;
-	int err;
+	static char buf[BUFSIZE];
+//	int sret;
+//	int err;
 	int len = 0;
 	struct watchinfo* wi = *context;
-	struct timeval tv = { .tv_sec = 0, .tv_usec = 100000 };
+	struct timeval tvloop;
+	struct timeval tv1, tv2;
 	int* blar = &errno;
+	fd_set set;
+	bool shouldkill = 0;
 	
 	if(pipe(fds))
 	{
@@ -46,34 +54,49 @@ int nextVal(void** context, float* outs)
 	}
 	close(fds[1]);
 	
-	sret = select(0, NULL, NULL, NULL, NULL);
-	err = errno;
-	usleep(10000);
-	len = read(fds[0], buf, 65535);
-	if(len < 0)
-		len = 0;
-	if(sret == -1)
+	gettimeofday(&tv1, NULL);
+	
+	while(1)
 	{
-		if(err == EINTR)
+		int ret;
+		FD_ZERO(&set);
+		FD_SET(fds[0], &set);
+		
+		tvloop.tv_sec = 0;
+		tvloop.tv_usec = 1000;
+		
+		ret = select(fds[0]+1, &set, NULL, NULL, &tvloop);
+		if(ret > 0)
 		{
-			if(waitpid(pid, NULL, WNOHANG) != pid)
+			ret = read(fds[0], buf+len, BUFSIZE-len-1);
+			if(ret < 0)
 			{
-				kill(pid, SIGKILL);
-				usleep(1000);
-				waitpid(pid, NULL, WNOHANG);
+				ret = 0;
 			}
+			if(ret == 0)
+			{
+				break;
+			}
+			len += ret;
 		}
-	}
-	else
-	{
-		kill(pid, SIGKILL);
-		usleep(1000);
-		waitpid(pid, NULL, WNOHANG);
+//		if(ret < 0)
+//		{
+//			shouldkill = true;
+//		}
+		
+		gettimeofday(&tv2, NULL);
+		float elapsed = (tv2.tv_sec+(double)tv2.tv_usec/1000000.0) - (tv1.tv_sec+(double)tv1.tv_usec/1000000.0);
+		if(len >= BUFSIZE-1 || elapsed > TIMEOUT || shouldkill)
+		{
+			kill(pid, SIGKILL);
+			break;
+		}
 	}
 	
 	close(fds[0]);
 	buf[len] = '\0';
-	setText(buf);
+	if(len > 0)
+		setText(buf);
 	
 	return 0;
 }
