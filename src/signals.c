@@ -8,13 +8,22 @@
 #include <stdbool.h>
 #include <sys/time.h>
 #include <stdlib.h>
+#include <sys/wait.h>
 #include "signals.h"
 
 volatile sig_atomic_t got_sigitimer = false;
 
 void sigHandler(int sig)
 {
-	got_sigitimer = true;
+	switch(sig)
+	{
+		case SIGALRM:
+			got_sigitimer = true;
+			break;
+		case SIGCHLD:
+			while(waitpid(-1, NULL, WNOHANG) > 0);
+			break;
+	}
 }
 
 int createTimer(int frequency)
@@ -44,6 +53,10 @@ int registerHandlers()
 	if (sigaction(SIGALRM,&sa,NULL) == -1)
 	{
 		retval |= 1;
+	}
+	if (sigaction(SIGCHLD,&sa,NULL) == -1)
+	{
+		retval |= 2;
 	}
 	
 	return retval;
