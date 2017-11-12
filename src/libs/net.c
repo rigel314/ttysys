@@ -12,6 +12,8 @@
 #include <stdbool.h>
 #include "net.h"
 
+volatile char* shortDesc = "Network Speed";
+
 void printTitle(char* iface)
 {
 	int x = strlen(iface);

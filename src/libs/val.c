@@ -12,6 +12,8 @@
 #include <stdbool.h>
 #include "val.h"
 
+volatile char* shortDesc = "Value Monitor";
+
 void printTitle(char* file)
 {
 	char* fname = strrchr(file, '/');

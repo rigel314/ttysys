@@ -11,6 +11,8 @@
 #include <string.h>
 #include "mem.h"
 
+volatile char* shortDesc = "RAM/Swap Usage";
+
 /**
  * long parseMemLine(char* str, int len)
  * 	str is a line from /proc/meminfo.

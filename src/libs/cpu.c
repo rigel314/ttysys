@@ -14,6 +14,8 @@
 #include <sys/select.h>
 #include "cpu.h"
 
+volatile char* shortDesc = "CPU Usage";
+
 /**
  * int strchrCount(char* s, char c)
  * 	s is a string.

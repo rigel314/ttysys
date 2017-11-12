@@ -19,6 +19,8 @@
 #define BUFSIZE 65536
 #define TIMEOUT .5
 
+volatile char* shortDesc = "GNU Watch-like";
+
 int nextVal(void** context, float* outs)
 {
 	int fds[2];
@@ -79,10 +81,6 @@ int nextVal(void** context, float* outs)
 			}
 			len += ret;
 		}
-//		if(ret < 0)
-//		{
-//			shouldkill = true;
-//		}
 		
 		gettimeofday(&tv2, NULL);
 		float elapsed = (tv2.tv_sec+(double)tv2.tv_usec/1000000.0) - (tv1.tv_sec+(double)tv1.tv_usec/1000000.0);
