@@ -5,18 +5,14 @@
  *      Author: cody
  *
  *	TODO:
- *		make the api cooler
- *			required function for shortdescription (fixed name)
  *		startup CLI args
+ *			add option to show help in less-able format
  *		Fix titles
  *			length
  *			per chart type format
  *		Make command entry cooler
  *			show errors on plugin load
  *			support escaping special chars
- *		New help window.
- *			show help in voiddata
- *			display list of found plugins with shortdescription
  *		Do something about close window prompt
  *			maybe use the command line, emacs-style?
  *		Cleanup plugin window when changing plugin and new plugin fails init.
@@ -27,6 +23,7 @@
  *			Corners in the border
  *			Resizeability
  *			make the api cooler
+ *				call each plugin in it's own thread(don't have it exit though - just use signals or something as triggers)
  *				add elapsed time api call
  */
 
