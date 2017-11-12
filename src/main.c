@@ -6,9 +6,7 @@
  *
  *	TODO:
  *		make the api cooler
- *			add elapsed time api call
- *		make more plugins
- *			(gnu watch)-like
+ *			required function for shortdescription (fixed name)
  *		startup CLI args
  *		Fix titles
  *			length
@@ -18,6 +16,7 @@
  *			support escaping special chars
  *		New help window.
  *			show help in voiddata
+ *			display list of found plugins with shortdescription
  *		Do something about close window prompt
  *			maybe use the command line, emacs-style?
  *		Cleanup plugin window when changing plugin and new plugin fails init.
@@ -27,6 +26,8 @@
  *			default startup file
  *			Corners in the border
  *			Resizeability
+ *			make the api cooler
+ *				add elapsed time api call
  */
 
 #include <ncurses.h>
@@ -64,6 +65,7 @@ int main(int argc, char** argv)
 	focus = wins;
 
 	// Display first window
+	drawScreen(wins);
 	refreshAll(wins, focus); // Draw each window's title and write it to the screen.
 	
 	// timer

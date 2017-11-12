@@ -13,6 +13,17 @@
 // Timer frequency of internal timer.  Max update frequency for windows.
 #define TIMER_FREQ 10 // Hz
 
+// Path to plugins
+#ifndef DEBUG
+#define SYSTEMPLUGINPATH "/etc/ttysys/plugins/"
+#define USERPLUGINPATH "~/.ttysys/plugins/"
+#else
+#define SYSTEMPLUGINPATH "./build/object/libs/"
+#endif
+
+// If a plugin declares this variable, it's value will be shown in the help display
+volatile extern char* shortDesc;
+
 enum winType { VoidChart, PercentChart, ScaledValueChart, TextChart, UpDownChart };
 
 struct initData;

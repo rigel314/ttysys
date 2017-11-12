@@ -24,7 +24,7 @@ void setText(char* text)
 	if(plgWin->type == TextChart)
 	{
 		werase(plgWin->contentwin);
-		mvwprintw(plgWin->contentwin,0,0,"%s", text);
+		mvwprintw(plgWin->contentwin, 0, 0, "%s", text);
 	}
 }
 

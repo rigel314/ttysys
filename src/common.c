@@ -6,51 +6,127 @@
  */
 
 #include <ncurses.h>
+#include <dirent.h>
+#include <wordexp.h>
+#include <string.h>
+#include <errno.h>
+#include <dlfcn.h>
+#include <stdlib.h>
 #include "common.h"
+#include "ttysys_api.h"
 
-/**
- * void showHelp()
- * Presents a window showing a help screen.
- */
-void showHelp()
+void getHelpStr(char* out)
 {
-	int c;
-	// Make frames.
-	WINDOW* bwin = newwin(20, 70, LINES / 2 - 10, COLS / 2 - 35);
-	WINDOW* hwin = newwin(18, 68, LINES / 2 - 10 + 1, COLS / 2 - 35 + 1);
+	sprintf(out,	"%s v%s\n"
+					"Window Management:\n"
+					"  h            Split current window horizontally.\n"
+					"  v            Split current window vertically.\n"
+					"  c            Close current window.\n"
+					"  Tab          Move to next window in order of creation.\n"
+					"  Arrow Keys   Move to next window on screen in direction pressed.\n"
+					"  g            Toggle grid for selected window.\n"
+					"  e            Toggle value display in current window's title.\n"
+					"  t            Toggle display of current window's title bar.\n"
+					"  o            Toggle display of current window's label sidebar.\n"
+					"  q            Quit this program.\n"
+					"\n"
+					"Plugins: (+: while in command entry)\n"
+					"  ~            Enter command entry.\n"
+					" +ESC          Leave command entry.\n"
+					" +ENTER        Run command and leave command entry.\n"
+					"Plugin command format:\n"
+					"  period name(args)\n"
+					"     |     |    +--zero or more strings, separated by comma or space\n"
+					"     |     +-------plugin name\n"
+					"     +-------------number of 10Hz cycles between calls to the plugin\n"
+					"Examples:\n"
+					"  10 cpu()\n"
+					"  10 cpu(0)\n"
+					"  10 watch(\"top -b -n1\")\n"
+					"\n"
+					"Found:\n",
+					AppName, AppVers);
 	
-	box(bwin, 0, 0); // Print border.
-	mvwprintw(hwin, 0, 0, 	"%s v%s\n"
-							"Lots of keys do things:\n"
-							"  ?            This help.\n"
-							"  h            Split current window horizontally.\n"
-							"  v            Split current window vertically.\n"
-							"  c            Close current window.\n"
-							"  Tab          Move to next window in order of creation.\n"
-							"  Arrow Keys   Move to next window on screen in direction pressed.\n"
-							"  Numbers 0-9  Set data source to CPU #. '0' means give a summary.\n"
-							"  m            Set data source to Ram.\n"
-							"  s            Set data source to Swap.\n"
-							"  g            Toggle grid for selected window.\n"
-							"  e            Toggle value display in current window's title.\n"
-							"  t            Toggle display of current window's title bar.\n"
-							"  o            Toggle display of current window's label sidebar.\n"
-							"  q            Quit this program.\n"
-							"\n"
-							"Press Enter to dismiss this help.",
-							AppName, AppVers);
+	DIR* dp;
+	struct dirent* dir;
+	char fullname[1000];
 	
-	wrefresh(bwin); // Actually write to screen.
-	wrefresh(hwin);
+#ifdef USERPLUGINPATH
+	wordexp_t we;
+	wordexp(USERPLUGINPATH, &we, WRDE_NOCMD);
 	
-	while((c = getch()))
-	{ // Wait for enter.
-		if(c == '\n')
-			break;
+	int len = 0;
+	for(int i = 0; i < we.we_wordc; i++)
+		len += strlen(we.we_wordv[i]);
+	
+	char* userpath = malloc(len+1);
+	if(!userpath)
+		return;
+	
+	userpath[0] = '\0';
+	for(int i = 0; i < we.we_wordc; i++)
+		strcat(userpath, we.we_wordv[i]);
+
+	dp = opendir(userpath);
+	if(!dp)
+	{
+		sprintf(out+strlen(out), "errno: %d\n", errno);
+		return;
 	}
+	while ((dir = readdir(dp)) != NULL)
+	{
+		int len = strlen(dir->d_name);
+		if(len > 3 && !strcmp(dir->d_name + len - 3, ".so"))
+		{
+			sprintf(fullname, "%s/%s", userpath, dir->d_name);
+
+			void* handle = dlopen(fullname, RTLD_LAZY);
+			if(!handle)
+				continue;
+			
+			strcat(out, "  ");
+			strncat(out, dir->d_name, len - 3);
+			strcat(out, " - ");
+			char** desc = dlsym(handle, "shortDesc");
+			if(desc)
+				strcat(out, *desc);
+			strcat(out, "\n");
+			
+			dlclose(handle);
+		}
+	}
+	closedir(dp);
+#endif
 	
-	delwin(hwin);
-	delwin(bwin);
+	dp = opendir(SYSTEMPLUGINPATH);
+	if(!dp)
+	{
+		sprintf(out+strlen(out), "errno: %d\n", errno);
+		return;
+	}
+	while ((dir = readdir(dp)) != NULL)
+	{
+		int len = strlen(dir->d_name);
+		if(len > 3 && !strcmp(dir->d_name + len - 3, ".so"))
+		{
+			sprintf(fullname, "%s/%s", SYSTEMPLUGINPATH, dir->d_name);
+
+			void* handle = dlopen(fullname, RTLD_LAZY);
+			if(!handle)
+				continue;
+			
+			strcat(out, "  ");
+			strncat(out, dir->d_name, len - 3);
+			strcat(out, " - ");
+			char** desc = dlsym(handle, "shortDesc");
+			if(desc)
+				strcat(out, *desc);
+			strcat(out, "\n");
+			
+			dlclose(handle);
+		}
+	}
+	closedir(dp);
 }
 
 /**

@@ -43,7 +43,7 @@ struct GRect
 // Helper macro for creating a GRect in one line.
 #define GRect(x, y, w, h) ((struct GRect){{(x), (y)}, {(w), (h)}})
 
-void showHelp();
+void getHelpStr(char* out);
 char* getDirectionString(int num);
 int strchrCount(char* s, char c);
 void listShiftLeftAdd(float* list, int len, float new);

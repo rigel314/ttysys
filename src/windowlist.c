@@ -44,7 +44,7 @@ void drawScreen(struct windowlist* win)
 			for(int j = 0; j < height; j++)
 			{
 				if(j >= indexes[i])
-					mvwaddch(win->contentwin, j, i, ACS_PLUS);
+					mvwaddch(win->contentwin, j, i, PLOT_CHAR);
 				else
 					mvwaddch(win->contentwin, j, i, ' ');
 			}
@@ -57,7 +57,7 @@ void drawScreen(struct windowlist* win)
 					if(axes[j] < indexes[i])
 						mvwaddch(win->contentwin, axes[j], i, ACS_HLINE); // Draw a line.
 					else
-						mvwaddch(win->contentwin, axes[j], i, ACS_PLUS); // We still want to see a point if was on a grid line.
+						mvwaddch(win->contentwin, axes[j], i, PLOT_CHAR); // We still want to see a point if was on a grid line.
 					wattroff(win->contentwin, COLOR_PAIR(1));
 				}
 			}
@@ -92,7 +92,7 @@ void drawScreen(struct windowlist* win)
 			for(int j = 0; j < height; j++)
 			{
 				if(j >= indexes[i])
-					mvwaddch(win->contentwin, j, i, ACS_PLUS);
+					mvwaddch(win->contentwin, j, i, PLOT_CHAR);
 				else
 					mvwaddch(win->contentwin, j, i, ' ');
 			}
@@ -172,6 +172,14 @@ void drawScreen(struct windowlist* win)
 	{
 //		werase(win->contentwin);
 //		mvwprintw(win->contentwin, 0, 0, "%s", "test");
+	}
+	else if(win->type == VoidChart)
+	{
+		char* help = malloc(10000);
+		getHelpStr(help);
+		mvwaddstr(win->contentwin, 0, 0, help);
+//		mvwprintw(win->contentwin, 0, 0, "%s", help);
+		free(help);
 	}
 }
 
