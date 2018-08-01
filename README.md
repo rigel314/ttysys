@@ -31,7 +31,7 @@ _sequence_ can consist of any number of the following characters:
 * `?` - Displays a help window.
 * `h` - Split current window horizontally.
 * `v` - Split current window vertically.
-* `u` - Un-split current window.
+* `c` - Close current window.
 * Tab - Move to next window in order of creation.
 * Arrow Keys - Move to next window on screen in direction pressed.
 * Numbers `0` - `9` and keys `m` and `s` - Select a data source for a window.
@@ -43,6 +43,10 @@ _sequence_ can consist of any number of the following characters:
 * `t` - Toggle display of current window's title bar.
 * `o` - Toggle display of current window's ordinate label sidebar.
 * `q` - Quit this program.
+* `u` - Same as up arrow key. Move to window above current one.
+* `d` - Same as down arrow key. Move to window below current one.
+* `l` - Same as left arrow key. Move to window left of current one.
+* `r` - Same as right arrow key. Move to window right of current one.
 
 These same buttons will control the program while it is running.
 
