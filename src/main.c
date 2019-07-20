@@ -174,17 +174,55 @@ int main(int argc, char** argv)
 				if(focus->surrounding.down != NULL)
 					focus = focus->surrounding.down;
 				break;
+			case '!':
+				focus->dataType = CPUData;
+				focus->dataSource = 10;
+				break;
+			case '@':
+				focus->dataType = CPUData;
+				focus->dataSource = 11;
+				break;
+			case '#':
+				focus->dataType = CPUData;
+				focus->dataSource = 12;
+				break;
+			case '$':
+				focus->dataType = CPUData;
+				focus->dataSource = 13;
+				break;
+			case '%':
+				focus->dataType = CPUData;
+				focus->dataSource = 14;
+				break;
+			case '^':
+				focus->dataType = CPUData;
+				focus->dataSource = 15;
+				break;
+			case '&':
+				focus->dataType = CPUData;
+				focus->dataSource = 16;
+				break;
+			case '*':
+				focus->dataType = CPUData;
+				focus->dataSource = 17;
+				break;
+			case '(':
+				focus->dataType = CPUData;
+				focus->dataSource = 18;
+				break;
+			case ')':
+				focus->dataType = CPUData;
+				focus->dataSource = 19;
+				break;
 		}
 		if(c >= '0' && c <= '9')
 		{ // Do this outside the switch so I can specify a range without 10 cases.
-			if(c - '0' < numCPUs + 1)
-			{
-				// Make sure the type is set to CPU
-				focus->dataType = CPUData;
-				focus->dataSource = c - '0';
-			}
+			// Make sure the type is set to CPU
+			focus->dataType = CPUData;
+			focus->dataSource = c - '0';
 		}
-		
+	        if(focus->dataSource > numCPUs)
+		       focus->dataSource = 0;	
 		if(argCtr <= argLen)
 		{
 			argCtr++;
