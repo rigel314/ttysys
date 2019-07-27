@@ -13,6 +13,10 @@
 #include "windowlist.h"
 #include "common.h"
 
+
+#define DRAW_UNIT ACS_DIAMOND
+#define UNUSED(x) (void)(x)
+
 /**
  * void drawScreen(struct windowlist* win)
  * 	win is a window to draw.
@@ -40,7 +44,7 @@ void drawScreen(struct windowlist* win)
 		for(int j = 0; j < height; j++)
 		{
 			if(j >= indexes[i])
-				mvwaddch(win->contentwin, j, i, ACS_PLUS);
+				mvwaddch(win->contentwin, j, i, DRAW_UNIT);
 			else
 				mvwaddch(win->contentwin, j, i, ' ');
 		}
@@ -53,7 +57,7 @@ void drawScreen(struct windowlist* win)
 				if(axes[j] < indexes[i])
 					mvwaddch(win->contentwin, axes[j], i, ACS_HLINE); // Draw a line.
 				else
-					mvwaddch(win->contentwin, axes[j], i, ACS_PLUS); // We still want to see a point if was on a grid line.
+					mvwaddch(win->contentwin, axes[j], i, DRAW_UNIT); // We still want to see a point if was on a grid line.
 				wattroff(win->contentwin, COLOR_PAIR(1));
 			}
 		}
@@ -228,7 +232,7 @@ void splitV(struct windowlist* old)
 	struct windowlist* new;
 	bool odd;
 	
-	if(old->frame.size.height < 4)
+	if(old->frame.size.height < 6)
 		return;
 
 	new = addWin(&old);
@@ -446,14 +450,25 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 			// Turn on color for the focused window.
 			if(ptr == focus)
 				wattron(ptr->titlewin, COLOR_PAIR(2));
-			
+			int mx,my,offset;
+
+			getmaxyx(ptr->titlewin, my, mx);
+			UNUSED(my);
+
 			if(ptr->dataType == CPUData)
 			{
-				strcpy(ptr->title, "CPU ");
+				if(mx > 10) {
+					strcpy(ptr->title, "CPU ");
+					offset = 4;
+				} else {
+					strcpy(ptr->title, "");
+					offset = 0;
+				}
 				if(ptr->dataSource == 0)
 					strcat(ptr->title, "Summary"); // "CPU Summary"
 				else
-					sprintf(ptr->title + 4, "%d", ptr->dataSource); // "CPU 1"
+					if(mx > 5)
+						sprintf(ptr->title + offset, "%d", ptr->dataSource); // "CPU 1"
 			}
 			else if(ptr->dataType == MemData)
 			{
@@ -465,7 +480,8 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 			
 			if(ptr->flags & wf_ExpandedTitle)
 			{
-				strcat(ptr->title, " - ");
+				if(strlen(ptr->title) > 0)
+					strcat(ptr->title, " ");
 				sprintf(ptr->title + strlen(ptr->title), "%.2f%%", ptr->data[ptr->dataLen-1]); // "CPU Summary - 17.26%"
 				
 				if((ptr->flags & wf_ShowMax) && ptr->dataType == MemData)
@@ -492,7 +508,10 @@ void refreshAll(struct windowlist* wins, struct windowlist* focus)
 			ptr->title[39] = '\0'; // Null terminate title.
 			
 			// Actually print title. (not actually, just schedule it for the next refresh() call.)
-			mvwaddstr(ptr->titlewin, 0, 3, ptr->title);
+			int ff = 0;
+			if (mx > 7)
+				ff = 1;
+			mvwaddstr(ptr->titlewin, 0, ff, ptr->title);
 			
 			// Turn off color if it was on.
 			if(ptr == focus)
